@@ -20,7 +20,7 @@ Hi this is Yipengjing Sun. I am a PhD student in Faculty of Computing, Harbin In
 <td style="padding:20px;width:70%;vertical-align:middle;border: none" align="left">
 <b>Geometric Context Transformer for Streaming 3D Reconstruction</b><br>
 Lin-Zhuo Chen, Jian Gao, Yihang Chen, Ka Leong Cheng, <b>Yipengjing Sun</b>, Liangxiao Hu, Nan Xue, Xing Zhu, Yujun Shen, Yao Yao, Yinghao Xu<br>
-<i>Technical Report, 2026</i><br>
+<i>arXiv, 2026</i><br>
 <a href="https://technology.robbyant.com/lingbot-map"><i class="fas fa-fw fa-globe"></i>Projectpage</a> /
 <a href="https://arxiv.org/abs/2604.14141"><i class="fas fa-fw fa-file-pdf"></i>Paper</a> /
 <a href="https://github.com/robbyant/lingbot-map"><i class="fas fa-fw fa-code"></i>Code</a>

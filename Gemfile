@@ -9,7 +9,11 @@ source "https://rubygems.org"
 # This will help ensure the proper Jekyll version is running.
 # Happy Jekylling!
 
-gem "github-pages", group: :jekyll_plugins
+# Pin GitHub Pages to a Ruby 2.6-compatible release for local builds.
+gem "github-pages", "~> 228", group: :jekyll_plugins
+
+# Newer nokogiri releases require Ruby 3.x and break dependency resolution here.
+gem "nokogiri", "~> 1.13.10"
 
 # If you want to use Jekyll native, uncomment the line below.
 # To upgrade, run `bundle update`.

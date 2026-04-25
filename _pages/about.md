@@ -35,6 +35,24 @@ Lin-Zhuo Chen, Jian Gao, Yihang Chen, Ka Leong Cheng, <b>Yipengjing Sun</b>, Lia
 <table style="width:100%;border:none;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;font-size: large">
 <tr>
 <td style="padding:20px;width:30%;vertical-align:middle;border:none" align="center">
+<img width="100%" src="../images/headlighter.jpg"/>
+</td>
+<td style="padding:20px;width:70%;vertical-align:middle;border: none" align="left">
+<b>HeadLighter: Disentangling Illumination in Generative 3D Gaussian Heads via Lightstage Captures</b><br>
+Yating Wang, Yuan Sun, Xuan Wang, Ran Yi, Boyao Zhou, <b>Yipengjing Sun</b>, Hongyu Liu, Yinuo Wang, Lizhuang Ma<br>
+<i>arXiv, 2026</i><br>
+<a href="https://arxiv.org/abs/2601.02103"><i class="fas fa-fw fa-file-pdf"></i>Paper</a>
+</td>
+</tr>
+</table>
+</div>
+
+---
+
+<div>
+<table style="width:100%;border:none;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;font-size: large">
+<tr>
+<td style="padding:20px;width:30%;vertical-align:middle;border:none" align="center">
 <img width="100%" src="../grgs/resources/dynamic_results2.gif"/>
 </td>
 <td style="padding:20px;width:70%;vertical-align:middle;border: none" align="left">

@@ -40,7 +40,7 @@ Lin-Zhuo Chen, Jian Gao, Yihang Chen, Ka Leong Cheng, <b>Yipengjing Sun</b>, Lia
 <td style="padding:20px;width:70%;vertical-align:middle;border: none" align="left">
 <b>Generalizable and Relightable Gaussian Splatting for Human Novel View Synthesis</b><br>
 <b>Yipengjing Sun</b>, Chenyang Wang, Shunyuan Zheng, Zonglin Li, Shengping Zhang, Xiangyang Ji<br>
-<i>arXiv, 2025</i><br>
+<i>SIGGRAPH, 2026</i><br>
 <a href="https://sypj-98.github.io/grgs/"><i class="fas fa-fw fa-globe"></i>Projectpage</a> /
 <a href="https://arxiv.org/abs/2505.21502"><i class="fas fa-fw fa-file-pdf"></i>Paper</a> /
 <a href="https://www.youtube.com/watch?v=mwcIAyEqSY8"><i class="fas fa-fw fa-video"></i>Video</a>

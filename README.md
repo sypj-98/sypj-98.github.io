@@ -13,7 +13,7 @@ Open `http://127.0.0.1:4000`.
 
 ## Main content
 
-- Homepage content: `_pages/about.md`
+- Homepage content: `index.html`
 - Site config: `_config.yml`
 - Navigation: `_data/navigation.yml`
 - Publications: `_publications/`

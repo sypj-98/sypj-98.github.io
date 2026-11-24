@@ -130,19 +130,18 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
 .screen-head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:clamp(8px,2dvh,17px) clamp(12px,3vw,22px)}
 .screen-head h2{font-size:1.5rem;letter-spacing:-.04em}
 .screen-head .eyebrow{font-size:.72rem;margin-bottom:1px}
-.film-quality{display:flex;align-items:center;gap:.45em;margin-left:auto;font-size:.8rem}
-.film-quality select{max-width:11em;min-height:32px;padding:3px;border:1px solid #676865;border-radius:4px;color:inherit;background:#222323;font:inherit}
+
+
 .film-files{display:none}
 /* Fragment navigation also exposes both parts when dialog scripting is unavailable. */
 #screening:target:not([open]){display:block;position:fixed;inset:0;margin:auto;height:fit-content;z-index:20}
 #screening:target:not([open])>:not(.film-files){display:none}
 #screening:target:not([open])>.film-files{display:grid;padding:1.5rem;gap:.8rem}
 .film-files a{text-decoration:underline;margin-right:.5rem}
-@media(max-width:430px){.screen-head{gap:8px}.film-quality{align-items:flex-start;flex-direction:column;gap:0}.screen-head .close{flex-shrink:0}}
+@media(max-width:430px){.screen-head{gap:8px}.screen-head .close{flex-shrink:0}}
 @media(max-width:360px){
   .screen-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px}
   .screen-head .close{grid-column:2;grid-row:1}
-  .film-quality{grid-column:1/-1;grid-row:2;flex-direction:row;align-items:center;gap:.45em;margin-left:0}
 }
 .close{width:38px;height:38px;border:1px solid #676865;border-radius:50%;background:none;font-size:1.6rem;line-height:1}
 .film-frames{position:relative;width:100%;aspect-ratio:16/9;max-height:min(61dvh,max(6rem,93dvh - 12rem));background:#080908}

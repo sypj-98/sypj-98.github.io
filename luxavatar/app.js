@@ -13,6 +13,11 @@ let direction = 1;
 let navigationTarget = null;
 
 function releaseLoadingTrack(track) {
+  const group = previewViews.get(track).group;
+  if (group) {
+    group.stop(true);
+    return;
+  }
   if (!track.hasAttribute('src') || (track.networkState !== HTMLMediaElement.NETWORK_LOADING && track.readyState > 0)) return;
   if (track.readyState >= HTMLMediaElement.HAVE_METADATA) previewViews.get(track).resumeAt = track.currentTime;
   track.removeAttribute('src');
@@ -20,21 +25,18 @@ function releaseLoadingTrack(track) {
   track.load();
 }
 
-function attachPreview(video, coldStart = false) {
-  if (video.hasAttribute('src')) return;
-  const network = navigator.connection;
-  const slow = ['slow-2g', '2g', '3g'].includes(network?.effectiveType);
-  const limited = network?.saveData || slow || (network?.downlink > 0 && network.downlink < 4.5);
-  // The lighter files preserve the original pixel grid and timing. Safari exposes no link estimate.
-  const useLight = video.dataset.light && (coldStart || network?.saveData || !network?.downlink ||
-    network.downlink < Number(video.dataset.mbps) || slow);
-  if (video.dataset.low && (limited || previewViews.get(video).constrained)) video.src = video.dataset.low;
-  else video.src = useLight ? video.dataset.light : video.dataset.src;
+function attachPreview(video) {
+  if (!video.hasAttribute('src')) video.src = video.dataset.src;
 }
 
 function playPreview(video) {
+  const group = previewViews.get(video).group;
+  if (group) {
+    group.start();
+    return;
+  }
   video.preload = 'auto';
-  attachPreview(video, true);
+  attachPreview(video);
   if (video.error) video.load();
   video.play().catch(error => {
     if (error.name === 'NotAllowedError' && activePreview === video) setPreviewsEnabled(false);
@@ -104,9 +106,14 @@ function syncVisibleLoops() {
   warmPreview = neighbor;
   if (activePreview !== next) {
     if (activePreview) {
-      activePreview.pause();
-      if (activePreview !== neighbor && (previewsEnabled || activePreview.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)) {
-        releaseLoadingTrack(activePreview);
+      const group = previewViews.get(activePreview).group;
+      if (group) {
+        group.stop(activePreview !== neighbor);
+      } else {
+        activePreview.pause();
+        if (activePreview !== neighbor && (previewsEnabled || activePreview.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)) {
+          releaseLoadingTrack(activePreview);
+        }
       }
     }
     activePreview = next;
@@ -115,7 +122,8 @@ function syncVisibleLoops() {
       preview.retried = false;
       if (preview.rewind) {
         preview.resumeAt = 0;
-        if (next.readyState >= HTMLMediaElement.HAVE_METADATA) next.currentTime = 0;
+        if (preview.group) preview.group.rewind();
+        else if (next.readyState >= HTMLMediaElement.HAVE_METADATA) next.currentTime = 0;
         preview.rewind = false;
       }
       playPreview(next);
@@ -125,7 +133,7 @@ function syncVisibleLoops() {
     // WebKit may fetch the entire neighboring file with auto. Reserve bandwidth for the visible motion.
     const preload = !next || hasPlaybackBuffer(next) ? 'auto' : 'metadata';
     if (neighbor.preload !== preload) neighbor.preload = preload;
-    attachPreview(neighbor, neighbor === navigationTarget);
+    attachPreview(neighbor);
   }
 }
 
@@ -137,7 +145,7 @@ function queueVisibilityCheck() {
 }
 const previewResize = window.ResizeObserver && new ResizeObserver(queueVisibilityCheck);
 function observeLoop(video, view = video, restartOnExit = false) {
-  const preview = { view, restartOnExit, rewind: false, resumeAt: 0, retried: false, frames: 0 };
+  const preview = { view, restartOnExit, rewind: false, resumeAt: 0, retried: false };
   previewViews.set(video, preview);
   video.addEventListener('loadedmetadata', () => {
     if (!preview.rewind && preview.resumeAt > 0 && preview.resumeAt < video.duration) {
@@ -149,34 +157,11 @@ function observeLoop(video, view = video, restartOnExit = false) {
   video.addEventListener('progress', () => {
     if (activePreview === video) queueVisibilityCheck();
   });
-  // Link estimates can miss a slow CDN route. Recover at the same pose if playback remains starved.
-  let stallTimer;
-  const clearStall = () => clearTimeout(stallTimer);
-  function watchForMotion() {
-    clearStall();
-    const fallback = video.dataset.low || video.dataset.light;
-    if (!fallback || video.getAttribute('src') === fallback) return;
-    const frames = preview.frames;
-    stallTimer = setTimeout(() => {
-      // Some engines fire playing while still presenting only the poster or first decoded frame.
-      if (activePreview !== video || video.paused || preview.frames - frames >= 2 || video.seeking) return;
-      if (video.currentTime > 0) preview.resumeAt = video.currentTime;
-      preview.constrained = true;
-      video.src = fallback;
-      playPreview(video);
-    }, 2200);
-  }
-  video.addEventListener('play', watchForMotion);
-  video.addEventListener('waiting', watchForMotion);
-  video.addEventListener('pause', clearStall);
   video.addEventListener('error', () => {
-    if (preview.retried || activePreview !== video) return;
+    if (preview.group || preview.retried || activePreview !== video) return;
     preview.retried = true;
     setTimeout(() => {
       if (!video.error || activePreview !== video) return;
-      if (video.dataset.light) {
-        video.src = video.getAttribute('src') === video.dataset.light ? video.dataset.src : video.dataset.light;
-      }
       playPreview(video);
     }, 1000);
   });
@@ -259,11 +244,6 @@ function observeFrames(video, view, paint, restartOnExit = false) {
   function draw(time = video.currentTime) {
     if (activePreview !== video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
     paint(time);
-    const preview = previewViews.get(video);
-    if (time !== preview.lastFrameTime) {
-      preview.lastFrameTime = time;
-      preview.frames++;
-    }
     view.classList.add('frame-ready');
   }
   function queueFrame() {
@@ -297,7 +277,6 @@ function observeFrames(video, view, paint, restartOnExit = false) {
 
 connectPortraitPlayback(document.querySelector('#opening-film'), document.querySelector('.opening-panels'));
 const methodView = document.querySelector('.method-demo');
-const methodClock = methodView.querySelector('video');
 const inputFigures = [...methodView.querySelectorAll('.method-inputs figure')];
 function setMethodStage(stage) {
   const previous = methodView.dataset.stage;
@@ -314,14 +293,133 @@ function setMethodStage(stage) {
     figure.animate([{ transform }, { transform: 'none' }], { duration: 620, easing: 'cubic-bezier(.22,.72,.2,1)' });
   });
 }
-// Update the stage only after all six crops of the same decoded frame are ready.
-connectTiles(methodView, 3, 512, time => {
+connectOriginalTiles(methodView, 510, time => {
   let stage = 'inputs';
   if (time >= 3.6 && time < 6.4) stage = 'buffers';
   if (time >= 6.4 && time < 19.6) stage = 'relit';
   setMethodStage(stage);
 }, true);
-methodClock.addEventListener('error', () => setMethodStage('relit'));
+methodView.addEventListener('error', event => {
+  if (event.target instanceof HTMLVideoElement && !methodView.classList.contains('frame-ready')) setMethodStage('relit');
+}, true);
+
+// Use the delivered H.264 tracks directly so every tile retains its original pixels and color metadata.
+function connectOriginalTiles(view, frameCount, update, restartOnExit = false) {
+  const tracks = [...view.querySelectorAll('video[data-slots]')].map(video => ({
+    video,
+    count: Number(video.dataset.frames) || frameCount,
+    confirmed: -1,
+    tiles: video.dataset.slots.split(' ').map(slot =>
+      view.querySelector(`[data-slot="${slot}"] canvas`).getContext('2d', { alpha: false }))
+  }));
+  const primary = tracks[0].video;
+  let frame = 0;
+  let run = null;
+  let timer;
+  let retried = false;
+
+  function decode(track, index, signal) {
+    const { video } = track;
+    if (track.confirmed === index && !video.seeking && video.readyState >= 2) return;
+    return new Promise((resolve, reject) => {
+      let requested = false;
+      function finish(error) {
+        video.removeEventListener('loadedmetadata', seek);
+        video.removeEventListener('loadeddata', ready);
+        video.removeEventListener('seeked', ready);
+        video.removeEventListener('error', fail);
+        signal.removeEventListener('abort', cancel);
+        if (error) reject(error);
+        else {
+          track.confirmed = index;
+          resolve();
+        }
+      }
+      function ready() {
+        if (requested && !video.seeking && video.readyState >= 2) finish();
+      }
+      function seek() {
+        track.confirmed = -1;
+        requested = true;
+        // Seek inside the frame interval. Rounded currentTime readings are unreliable on privacy-preserving browsers.
+        video.currentTime = (index + .25) / 25;
+      }
+      const cancel = () => finish(new DOMException('Preview paused', 'AbortError'));
+      const fail = () => finish(video.error || new Error('Video failed to decode'));
+      video.addEventListener('loadedmetadata', seek);
+      video.addEventListener('loadeddata', ready);
+      video.addEventListener('seeked', ready);
+      video.addEventListener('error', fail);
+      signal.addEventListener('abort', cancel, { once: true });
+      video.preload = 'auto';
+      if (video.error) finish(video.error);
+      else if (!video.hasAttribute('src')) video.src = video.dataset.src;
+      else if (video.readyState >= 1) seek();
+    });
+  }
+
+  async function next(current, due) {
+    try {
+      // The shorter fixed-light example repeats nine evenly spaced frames across the 202-frame rotating example.
+      await Promise.all(tracks.map(track =>
+        decode(track, Math.round(frame * (track.count - 1) / (frameCount - 1)), current.signal)));
+      // WebKit may publish the canvas texture one refresh after seeked. Wait for that paint before reading it.
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    } catch {
+      if (current.signal.aborted) return;
+      stop(true);
+      if (!retried && activePreview === primary) {
+        retried = true;
+        timer = setTimeout(start, 1000);
+      }
+      return;
+    }
+    if (current.signal.aborted || activePreview !== primary) return;
+    // All crops commit in one browser task. A slow or failed track leaves the last complete frame visible.
+    for (const { video, tiles } of tracks) {
+      const size = video.videoHeight;
+      tiles.forEach((ctx, column) => blit(ctx, video, column * size, 0, size));
+    }
+    if (update) update(frame / 25);
+    view.classList.add('frame-ready');
+    retried = false;
+    frame = (frame + 1) % frameCount;
+    const nextDue = Math.max(performance.now(), due + 40);
+    timer = setTimeout(() => next(current, nextDue), Math.max(0, nextDue - performance.now()));
+  }
+
+  function start() {
+    if (run || activePreview !== primary) return;
+    run = new AbortController();
+    next(run, performance.now());
+  }
+  function stop(release = false) {
+    run?.abort();
+    run = null;
+    clearTimeout(timer);
+    for (const track of tracks) {
+      const { video } = track;
+      if (!video.hasAttribute('src') || (!release && (video === primary || video.networkState !== HTMLMediaElement.NETWORK_LOADING))) continue;
+      track.confirmed = -1;
+      video.removeAttribute('src');
+      video.preload = 'none';
+      video.load();
+    }
+  }
+  function rewind() {
+    if (run) stop();
+    frame = 0;
+  }
+  window.addEventListener('online', () => {
+    if (activePreview === primary && !run) {
+      clearTimeout(timer);
+      retried = false;
+      start();
+    }
+  });
+  observeLoop(primary, view, restartOnExit);
+  previewViews.get(primary).group = { start, stop, rewind };
+}
 
 // Pack unlabelled source portraits into a single stream per exhibit for frame-locked playback.
 function blit(ctx, video, x, y, size) {
@@ -349,17 +447,7 @@ const castView = document.querySelector('.wall-screen');
 const castGrid = castView.querySelector('.cast-grid');
 const castClock = document.querySelector('#wall-film');
 let castColumns = 3;
-let previousCastFrame = null;
-let castExpansion;
-
-function interruptCastExpansion() {
-  previousCastFrame = null;
-  castExpansion?.cancel();
-}
-castClock.addEventListener('seeking', interruptCastExpansion);
-castClock.addEventListener('pause', interruptCastExpansion);
 function resetCastPoster() {
-  interruptCastExpansion();
   castColumns = 3;
   castGrid.style.removeProperty('--columns');
   castView.classList.remove('frame-ready');
@@ -370,20 +458,10 @@ observeFrames(castClock, castView, time => {
   const frame = Math.round(time * 25);
   const columns = frame < 114 ? 3 : frame < 297 ? 5 : 7;
   if (columns !== castColumns) {
-    castExpansion?.cancel();
+    // The source already contains the expanded grid; scaling it would magnify the smaller faces.
     castGrid.style.setProperty('--columns', columns);
-    // The existing faces occupy the center of the next packed layout. Start
-    // at their previous size and reveal the new outer ring as the surface shrinks.
-    if (previousCastFrame !== null && frame > previousCastFrame && columns === castColumns + 2
-        && !reducedMotion.matches && !castClock.paused && !castClock.seeking) {
-      castExpansion = castGrid.animate([
-        { transform: `scale(${columns / castColumns})` },
-        { transform: 'scale(1)' }
-      ], { duration: 700, easing: 'ease' });
-    }
     castColumns = columns;
   }
-  previousCastFrame = frame;
 });
 
 const viewDemo = document.querySelector('.view-demo');
@@ -471,29 +549,12 @@ connectTiles(viewDemo, 4, 384, time => {
 });
 const streamClock = document.querySelector('#stream-clock');
 const streamDemo = document.querySelector('.stream-demo');
-// Keep the matching inline still until its full-resolution replacement is decoded.
-const exhibitPosters = new IntersectionObserver((entries, observer) => {
-  for (const entry of entries) {
-    if (!entry.isIntersecting) continue;
-    observer.unobserve(entry.target);
-    for (const preview of entry.target.querySelectorAll('img[data-full-src]')) {
-      const original = preview.cloneNode(false);
-      original.src = preview.dataset.fullSrc;
-      original.removeAttribute('data-full-src');
-      original.decode().then(() => preview.replaceWith(original)).catch(() => {
-        // A failed JPEG leaves the complete inline image available.
-      });
-    }
-  }
-}, { rootMargin: '400px 0px' });
-exhibitPosters.observe(environmentPreview);
-exhibitPosters.observe(streamDemo);
 streamClock.defaultPlaybackRate = 3;
 streamClock.playbackRate = 3;
 connectTiles(streamDemo, 3, 480);
 connectTiles(document.querySelector('#proxy-results'), 4, 480);
 // Both lighting conditions share the same decoded frame, including when only one row is visible.
-connectTiles(document.querySelector('#hybrid-data'), 4, 480);
+connectOriginalTiles(document.querySelector('#hybrid-data'), 202);
 
 screening.addEventListener('filmopen', () => {
   syncVisibleLoops();

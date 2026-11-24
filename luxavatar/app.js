@@ -2,7 +2,6 @@
 
 const screening = document.querySelector('#screening');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const previewToggles = document.querySelectorAll('.preview-toggle');
 let activePreview = null;
 let warmPreview = null;
 const previewViews = new Map();
@@ -173,16 +172,8 @@ function observeLoop(video, view = video, restartOnExit = false) {
 function setPreviewsEnabled(enabled) {
   previewsEnabled = enabled;
   document.documentElement.classList.toggle('previews-paused', !enabled);
-  const label = enabled ? 'Pause previews' : 'Play previews';
-  previewToggles.forEach(button => {
-    button.hidden = false;
-    button.setAttribute('aria-label', label);
-    button.title = label;
-    button.querySelector('span').textContent = label;
-  });
   syncVisibleLoops();
 }
-previewToggles.forEach(button => button.addEventListener('click', () => setPreviewsEnabled(!previewsEnabled)));
 const updateMotion = event => {
   prefersReducedMotion = event.matches;
   setPreviewsEnabled(!prefersReducedMotion);

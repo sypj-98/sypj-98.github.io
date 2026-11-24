@@ -11,8 +11,8 @@
   <title>LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</title>
   <link rel="icon" href="media/mark.png">
   <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=76a7f2d24f">
-  <script defer src="app.js?v=8e521b80da"></script>
+  <link rel="stylesheet" href="style.css?v=b04d9ae937">
+  <script defer src="app.js?v=3930e91a7a"></script>
 </head>
 <body>
   <a class="skip" href="#project">Skip to project overview</a>
@@ -54,7 +54,6 @@
         <img src="media/opening/sunrise-probes.png" alt="Pink Sunrise mirror and diffuse spheres" title="Pink Sunrise" width="223" height="104">
       </div>
       <div class="opening-shade" aria-hidden="true"></div>
-      <button class="preview-toggle" type="button" hidden><span>Pause previews</span></button>
       <div class="opening-intro" id="project">
         <div class="shell">
           <h1 id="project-name">Lux<i>Avatar</i></h1>
@@ -83,7 +82,6 @@
       <button class="menu-toggle" aria-controls="main-nav" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true"></span></button>
       <nav id="main-nav" aria-label="Main navigation"><a href="#method">Method</a><a href="#gallery">Gallery</a><a href="#free-view">3D control</a><a href="#ablations">Ablations</a></nav>
       <div class="head-actions">
-        <button class="preview-toggle" type="button" hidden><span>Pause previews</span></button>
         <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
       </div>
     </div>
@@ -366,7 +364,7 @@
       </div>
       <div class="film-status" role="status" hidden></div>
       <div class="playbar">
-        <button type="button" class="toggle-video">Pause</button>
+        <button type="button" class="play-film" hidden>Play</button>
         <output class="play-clock" aria-live="off">0:00</output>
         <input type="range" class="play-seek" min="0" max="1" step="0.04" value="0" aria-label="Seek video" disabled>
         <button type="button" class="expand-video" aria-label="Full screen" title="Full screen"><span aria-hidden="true">⛶</span></button>
@@ -412,7 +410,7 @@
     const subchapters = document.querySelector('#ablation-chapters');
     const subchapterButtons = [...subchapters.querySelectorAll('[data-subchapter]')];
     const player = screening.querySelector('.clip-player');
-    const playToggle = player.querySelector('.toggle-video');
+    const playButton = player.querySelector('.play-film');
     const filmStatus = player.querySelector('.film-status');
     const seek = player.querySelector('.play-seek');
     const clock = player.querySelector('.play-clock');
@@ -448,7 +446,8 @@
       retryPlayback = retry;
       if (filmStatus.textContent !== message) filmStatus.textContent = message;
       filmStatus.hidden = !message;
-      playToggle.textContent = retry ? 'Retry' : filmPlaying ? 'Pause' : 'Play';
+      playButton.hidden = filmPlaying && !retry;
+      playButton.textContent = retry ? 'Retry' : 'Play';
     }
     function clearFilmWait() {
       clearTimeout(filmWaitTimer);
@@ -642,16 +641,7 @@
       filmTrigger?.focus({ preventScroll: true });
     });
 
-    playToggle.addEventListener('click', () => {
-      if (retryPlayback || !filmPlaying) {
-        seekFilm(filmTime(), true, retryPlayback);
-        return;
-      }
-      filmPlaying = false;
-      film.pause();
-      clearFilmWait();
-      showFilmStatus();
-    });
+    playButton.addEventListener('click', () => seekFilm(filmTime(), true, retryPlayback));
     seek.disabled = false;
     seek.max = filmDuration - .04;
     showTime();

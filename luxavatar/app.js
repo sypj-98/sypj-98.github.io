@@ -1,65 +1,125 @@
 'use strict';
 
 const screening = document.querySelector('#screening');
-const filmFrames = document.querySelector('.film-frames');
-const films = [...filmFrames.querySelectorAll('video')];
-const filmSplit = Number(filmFrames.dataset.split);
-const filmDuration = Number(filmFrames.dataset.duration);
-const chapters = [...document.querySelectorAll('[data-chapter]')];
-let film = films[0];
-let filmPart = 0;
-let pendingChapter = null;
-let filmTrigger = null;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const previewToggles = document.querySelectorAll('.preview-toggle');
+let activePreview = null;
+const previewViews = new Map();
+let previewsEnabled = !reducedMotion.matches;
+let pendingVisibilityCheck = 0;
 
-const visibleLoops = new Set();
-const loopSources = new Map();
-function syncLoop(video) {
-  if (visibleLoops.has(video) && !document.hidden && !screening.open) {
-    if (!video.hasAttribute('src')) video.src = loopSources.get(video);
-    if (video.error) video.load();
-    video.play().catch(() => {});
-  } else {
-    video.pause();
-  }
-}
-function syncVisibleLoops() {
-  visibleLoops.forEach(syncLoop);
-}
 function releaseLoadingTrack(track) {
   if (track.networkState !== HTMLMediaElement.NETWORK_LOADING) return;
+  if (track.readyState >= HTMLMediaElement.HAVE_METADATA) previewViews.get(track).resumeAt = track.currentTime;
   track.removeAttribute('src');
   track.load();
 }
-function observeLoop(video, view = video, threshold = 0) {
-  loopSources.set(video, video.getAttribute('src'));
-  let retried = false;
-  video.addEventListener('error', () => {
-    if (retried || !visibleLoops.has(video)) return;
-    retried = true;
-    // Failed requests can look like unsupported media until the first frame is received.
-    setTimeout(() => { if (video.error) syncLoop(video); }, 1000);
+
+function playPreview(video) {
+  if (!video.hasAttribute('src')) video.src = previewViews.get(video).source;
+  else if (video.error) video.load();
+  video.play().catch(error => {
+    if (error.name === 'NotAllowedError' && activePreview === video) setPreviewsEnabled(false);
   });
-  new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting && entry.intersectionRatio >= threshold) visibleLoops.add(video);
-    else {
-      visibleLoops.delete(video);
-      retried = false;
-    }
-    syncLoop(video);
-    if (threshold > 0 && !entry.isIntersecting && video.readyState >= 1) video.currentTime = 0;
-  }, { threshold: [0, threshold] }).observe(view);
 }
+
+function syncVisibleLoops() {
+  let next = null;
+  let nearestCenter = Infinity;
+  const height = document.documentElement.clientHeight;
+  if (previewsEnabled && !document.hidden && !screening.open) {
+    for (const [video, preview] of previewViews) {
+      const box = preview.view.getBoundingClientRect();
+      const visible = Math.min(height, box.bottom) - Math.max(0, box.top);
+      if (visible <= 0 && preview.restartOnExit) preview.rewind = true;
+      // Large mobile exhibits can fill the viewport without ever fitting inside it.
+      if (!box.width || visible < 0.4 * Math.min(height, box.height) || visible <= 0) continue;
+      const distance = Math.abs((box.top + box.bottom - height) / 2);
+      if (distance < nearestCenter) {
+        nearestCenter = distance;
+        next = video;
+      }
+    }
+  }
+
+  if (activePreview === next) return;
+  if (activePreview) {
+    activePreview.pause();
+    // Keep a decoded frame visible on manual pause; cancel transfers when scrolling away.
+    if (previewsEnabled || activePreview.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+      releaseLoadingTrack(activePreview);
+    }
+  }
+  activePreview = next;
+  if (!next) return;
+  const preview = previewViews.get(next);
+  preview.retried = false;
+  if (preview.rewind) {
+    preview.resumeAt = 0;
+    if (next.readyState >= HTMLMediaElement.HAVE_METADATA) next.currentTime = 0;
+    preview.rewind = false;
+  }
+  playPreview(next);
+}
+
+function queueVisibilityCheck() {
+  if (!pendingVisibilityCheck) pendingVisibilityCheck = requestAnimationFrame(() => {
+    pendingVisibilityCheck = 0;
+    syncVisibleLoops();
+  });
+}
+const previewResize = window.ResizeObserver && new ResizeObserver(queueVisibilityCheck);
+function observeLoop(video, view = video, restartOnExit = false) {
+  const preview = { view, source: video.dataset.src, restartOnExit, rewind: false, resumeAt: 0, retried: false };
+  previewViews.set(video, preview);
+  video.addEventListener('loadedmetadata', () => {
+    if (activePreview === video && preview.resumeAt > 0 && preview.resumeAt < video.duration) {
+      video.currentTime = preview.resumeAt;
+    }
+    preview.resumeAt = 0;
+  });
+  video.addEventListener('error', () => {
+    if (preview.retried || activePreview !== video) return;
+    preview.retried = true;
+    setTimeout(() => {
+      if (video.error && activePreview === video) playPreview(video);
+    }, 1000);
+  });
+  previewResize?.observe(view);
+  queueVisibilityCheck();
+}
+
+function setPreviewsEnabled(enabled) {
+  previewsEnabled = enabled;
+  document.documentElement.classList.toggle('previews-paused', !enabled);
+  const label = enabled ? 'Pause previews' : 'Play previews';
+  previewToggles.forEach(button => {
+    button.hidden = false;
+    button.setAttribute('aria-label', label);
+    button.title = label;
+    button.querySelector('span').textContent = label;
+  });
+  syncVisibleLoops();
+}
+previewToggles.forEach(button => button.addEventListener('click', () => setPreviewsEnabled(!previewsEnabled)));
+const updateMotion = event => setPreviewsEnabled(!event.matches);
+if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', updateMotion);
+else reducedMotion.addListener(updateMotion);
+setPreviewsEnabled(previewsEnabled);
+window.addEventListener('scroll', queueVisibilityCheck, { passive: true });
+window.addEventListener('resize', queueVisibilityCheck);
+window.addEventListener('pageshow', queueVisibilityCheck);
 document.addEventListener('visibilitychange', syncVisibleLoops);
 
 // One decoded video frame supplies every canvas in a comparison.
-function connectPortraitPlayback(video, view, threshold = 0) {
+function connectPortraitPlayback(video, view, restartOnExit = false) {
   const panels = [...view.querySelectorAll('canvas')].map(canvas => ({
     canvas,
     panel: canvas.parentElement,
     context: canvas.getContext('2d', { alpha: false })
   }));
   function draw() {
-    if (!visibleLoops.has(video) || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+    if (activePreview !== video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
     panels.forEach(({ canvas, panel, context }, index) => {
       if (panel.hidden) return;
       const width = Number(panel.dataset.width) || video.videoWidth / panels.length;
@@ -74,15 +134,17 @@ function connectPortraitPlayback(video, view, threshold = 0) {
     view.classList.add('frame-ready');
   }
 
-  observeFrames(video, view, draw, threshold);
+  observeFrames(video, view, draw, restartOnExit);
   return draw;
 }
 
 // Use the decoded frame timestamp so tile layout and pixels change together on seeks and loops.
-function observeFrames(video, view, paint, threshold = 0) {
+function observeFrames(video, view, paint, restartOnExit = false) {
   let callback = null;
+  // At 3× playback, sampling at display refresh keeps frames that video callbacks skip.
+  const useVideoFrameCallback = video.playbackRate <= 1 && video.requestVideoFrameCallback;
   function draw(time = video.currentTime) {
-    if (!visibleLoops.has(video) || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+    if (activePreview !== video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
     paint(time);
     view.classList.add('frame-ready');
   }
@@ -93,30 +155,32 @@ function observeFrames(video, view, paint, threshold = 0) {
       draw(metadata?.mediaTime ?? video.currentTime);
       queueFrame();
     };
-    callback = video.requestVideoFrameCallback
+    callback = useVideoFrameCallback
       ? video.requestVideoFrameCallback(onFrame)
       : requestAnimationFrame(onFrame);
+  }
+  function cancelFrame() {
+    if (callback === null) return;
+    if (useVideoFrameCallback) video.cancelVideoFrameCallback(callback);
+    else cancelAnimationFrame(callback);
+    callback = null;
   }
 
   video.addEventListener('loadeddata', () => draw());
   video.addEventListener('seeked', () => draw());
   video.addEventListener('playing', () => { draw(); queueFrame(); });
-  video.addEventListener('pause', () => {
-    if (callback === null) return;
-    if (video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(callback);
-    else cancelAnimationFrame(callback);
-    callback = null;
+  video.addEventListener('pause', cancelFrame);
+  video.addEventListener('error', () => {
+    cancelFrame();
+    view.classList.remove('frame-ready');
   });
-  video.addEventListener('error', () => view.classList.remove('frame-ready'));
-  observeLoop(video, view, threshold);
+  observeLoop(video, view, restartOnExit);
 }
 
 connectPortraitPlayback(document.querySelector('#opening-film'), document.querySelector('.opening-panels'));
 const methodView = document.querySelector('.method-demo');
-const methodClock = methodView.querySelector('.method-inputs video');
-const methodFollowers = [...methodView.querySelectorAll('video')].filter(track => track !== methodClock);
+const methodClock = methodView.querySelector('video');
 const inputFigures = [...methodView.querySelectorAll('.method-inputs figure')];
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 function setMethodStage(stage) {
   const previous = methodView.dataset.stage;
   if (stage === previous) return;
@@ -132,17 +196,14 @@ function setMethodStage(stage) {
     figure.animate([{ transform }, { transform: 'none' }], { duration: 620, easing: 'cubic-bezier(.22,.72,.2,1)' });
   });
 }
-methodFollowers.forEach(track => observeLoop(track, methodView, .15));
-observeFrames(methodClock, methodView, time => {
+// Update the stage only after all six crops of the same decoded frame are ready.
+connectTiles(methodView, 3, 512, time => {
   let stage = 'inputs';
   if (time >= 3.6 && time < 6.4) stage = 'buffers';
   if (time >= 6.4 && time < 19.6) stage = 'relit';
   setMethodStage(stage);
-  methodFollowers.forEach(track => {
-    if (track.readyState >= 2 && !track.seeking && Math.abs(track.currentTime - time) > .06) track.currentTime = time;
-  });
-}, .15);
-methodClock.addEventListener('error', () => { delete methodView.dataset.stage; });
+}, true);
+methodClock.addEventListener('error', () => setMethodStage('relit'));
 
 // Pack unlabelled source portraits into a single stream per exhibit for frame-locked playback.
 function blit(ctx, video, x, y, size) {
@@ -150,56 +211,58 @@ function blit(ctx, video, x, y, size) {
   if (canvas.width !== size || canvas.height !== size) canvas.width = canvas.height = size;
   ctx.drawImage(video, x, y, size, size, 0, 0, size, size);
 }
-function connectTiles(view, columns, size, update) {
+function connectTiles(view, columns, size, update, restartOnExit = false) {
   const video = view.querySelector('video');
   const tiles = [...view.querySelectorAll('[data-slot]')].map(tile => ({
     slot: Number(tile.dataset.slot),
+    crop: Number(tile.dataset.size) || size,
     ctx: tile.querySelector('canvas').getContext('2d', { alpha: false })
   }));
   observeFrames(video, view, time => {
-    for (const { slot, ctx } of tiles) blit(ctx, video, slot % columns * size, Math.floor(slot / columns) * size, size);
+    // A crop may be smaller than its atlas cell when the source uses a different native size.
+    for (const { slot, ctx, crop } of tiles) blit(ctx, video, slot % columns * size, Math.floor(slot / columns) * size, crop);
     if (update) update(time);
-  });
+  }, restartOnExit);
 }
 const castView = document.querySelector('.wall-screen');
 const castGrid = castView.querySelector('.cast-grid');
 const castClock = document.querySelector('#wall-film');
-const cast = [];
-for (let y = -3; y <= 3; y++) {
-  for (let x = -3; x <= 3; x++) {
-    const cell = document.createElement('div');
-    cell.className = 'cast-cell';
-    cell.style.setProperty('--x', x);
-    cell.style.setProperty('--y', y);
-    const ring = Math.max(Math.abs(x), Math.abs(y));
-    cell.classList.toggle('in-cast', ring < 2);
-    if (ring < 2) {
-      const poster = new Image();
-      poster.alt = '';
-      poster.loading = 'lazy';
-      poster.src = 'media/gallery/portrait-' + ((y + 1) * 3 + x + 1) + '.jpg';
-      cell.append(poster);
-    }
-    const canvas = document.createElement('canvas');
-    cell.append(canvas);
-    castGrid.append(cell);
-    cast.push({ x, y, ring, cell, ctx: canvas.getContext('2d', { alpha: false }) });
-  }
-}
 let castColumns = 3;
+let previousCastFrame = null;
+let castExpansion;
+
+function interruptCastExpansion() {
+  previousCastFrame = null;
+  castExpansion?.cancel();
+}
+castClock.addEventListener('seeking', interruptCastExpansion);
+castClock.addEventListener('pause', interruptCastExpansion);
+function resetCastPoster() {
+  interruptCastExpansion();
+  castColumns = 3;
+  castGrid.style.removeProperty('--columns');
+  castView.classList.remove('frame-ready');
+}
+castClock.addEventListener('emptied', resetCastPoster);
+castClock.addEventListener('error', resetCastPoster);
 observeFrames(castClock, castView, time => {
   const frame = Math.round(time * 25);
   const columns = frame < 114 ? 3 : frame < 297 ? 5 : 7;
-  const radius = (columns - 1) / 2;
   if (columns !== castColumns) {
+    castExpansion?.cancel();
     castGrid.style.setProperty('--columns', columns);
-    cast.forEach(({ cell, ring }) => cell.classList.toggle('in-cast', ring <= radius));
+    // The existing faces occupy the center of the next packed layout. Start
+    // at their previous size and reveal the new outer ring as the surface shrinks.
+    if (previousCastFrame !== null && frame > previousCastFrame && columns === castColumns + 2
+        && !reducedMotion.matches && !castClock.paused && !castClock.seeking) {
+      castExpansion = castGrid.animate([
+        { transform: `scale(${columns / castColumns})` },
+        { transform: 'scale(1)' }
+      ], { duration: 700, easing: 'ease' });
+    }
     castColumns = columns;
   }
-  const size = castClock.videoWidth / columns;
-  for (const { x, y, ring, ctx } of cast) {
-    if (ring <= radius) blit(ctx, castClock, (x + radius) * size, (y + radius) * size, size);
-  }
+  previousCastFrame = frame;
 });
 
 const viewDemo = document.querySelector('.view-demo');
@@ -273,32 +336,37 @@ fetch('media/viewpoint/trajectory.json').then(response => {
   drawTrajectory(trajectoryFrame, trajectoryLight);
   viewDemo.querySelector('.trajectory-plot img').hidden = true;
 }).catch(() => { /* The first-pose image remains visible beneath the clear canvas. */ });
-const environmentPreview = viewDemo.querySelector('.view-env');
+const environmentPreview = viewDemo.querySelector('.view-light');
 connectTiles(viewDemo, 4, 384, time => {
   const frame = Math.min(450, Math.round(time * 25));
   const light = frame < 250 ? 'R05' : 'R06';
-  if (environmentPreview.dataset.light !== light) {
-    environmentPreview.src = 'media/viewpoint/' + light + '.jpg';
-    environmentPreview.dataset.light = light;
-  }
+  // The film holds the reference portraits, then fades in the first light and render together.
+  const visibleLight = frame < 24 ? '' : light;
+  if (environmentPreview.dataset.light !== visibleLight) environmentPreview.dataset.light = visibleLight;
+  const fade = Math.max(0, Math.min(1, (frame - 23) / 23));
+  const opacity = String(fade * fade * (3 - 2 * fade));
+  if (environmentPreview.style.opacity !== opacity) environmentPreview.style.opacity = opacity;
   drawTrajectory(frame < 250 ? Math.max(0, frame - 50) : frame - 250, light);
 });
 const streamClock = document.querySelector('#stream-clock');
 const streamDemo = document.querySelector('.stream-demo');
-// Keep a complete portrait visible while the full-resolution JPEG is arriving.
-const streamPosters = new IntersectionObserver(([entry], observer) => {
-  if (!entry.isIntersecting) return;
-  observer.disconnect();
-  for (const preview of streamDemo.querySelectorAll('img[data-full-src]')) {
-    const original = preview.cloneNode(false);
-    original.src = preview.dataset.fullSrc;
-    original.removeAttribute('data-full-src');
-    original.decode().then(() => preview.replaceWith(original)).catch(() => {
-      // The inline still also covers a failed poster request.
-    });
+// Keep the matching inline still until its full-resolution replacement is decoded.
+const exhibitPosters = new IntersectionObserver((entries, observer) => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    observer.unobserve(entry.target);
+    for (const preview of entry.target.querySelectorAll('img[data-full-src]')) {
+      const original = preview.cloneNode(false);
+      original.src = preview.dataset.fullSrc;
+      original.removeAttribute('data-full-src');
+      original.decode().then(() => preview.replaceWith(original)).catch(() => {
+        // A failed JPEG leaves the complete inline image available.
+      });
+    }
   }
 }, { rootMargin: '400px 0px' });
-streamPosters.observe(streamDemo);
+exhibitPosters.observe(environmentPreview);
+exhibitPosters.observe(streamDemo);
 streamClock.defaultPlaybackRate = 3;
 streamClock.playbackRate = 3;
 connectTiles(streamDemo, 3, 480);
@@ -306,208 +374,12 @@ connectTiles(document.querySelector('#proxy-results'), 4, 480);
 connectTiles(document.querySelector('#data-fixed'), 4, 480);
 connectTiles(document.querySelector('#data-rotating'), 3, 480);
 
-const subchapters = document.querySelector('#ablation-chapters');
-const subchapterButtons = [...subchapters.querySelectorAll('[data-subchapter]')];
-const player = screening.querySelector('.clip-player');
-player.append(document.querySelector('#playbar-template').content.cloneNode(true));
-const playToggle = player.querySelector('.toggle-video');
-const filmStatus = player.querySelector('.film-status');
-const seek = player.querySelector('.play-seek');
-const clock = player.querySelector('.play-clock');
-const expand = player.querySelector('.expand-video');
-let filmPlaying = false;
-let filmWaitTimer = null;
-let retryPlayback = false;
-let retriedFilmNetwork = false;
-let playAttempt = 0;
-let scrubbing = false;
-
-// Keep chapter links and seeking on the original timeline across both MP4 parts.
-function filmTime() {
-  return pendingChapter ?? (filmPart ? filmSplit : 0) + film.currentTime;
-}
-function showTime(time = filmTime()) {
-  if (scrubbing) return;
-  seek.value = time;
-  updateSeekPreview();
-}
-function updateSeekPreview() {
-  const seconds = Math.floor(Number(seek.value));
-  clock.value = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
-  seek.setAttribute('aria-valuetext', clock.value);
-}
-function showFilmStatus(message = '', retry = false) {
-  retryPlayback = retry;
-  if (filmStatus.textContent !== message) filmStatus.textContent = message;
-  filmStatus.hidden = !message;
-  playToggle.textContent = retry ? 'Retry' : filmPlaying ? 'Pause' : 'Play';
-}
-function clearFilmWait() {
-  clearTimeout(filmWaitTimer);
-  filmWaitTimer = null;
-}
-function waitForFilm() {
-  if (!screening.open || filmWaitTimer !== null || retryPlayback) return;
-  showFilmStatus('Buffering film…');
-  filmWaitTimer = setTimeout(() => {
-    filmWaitTimer = null;
-    showFilmStatus('The film is still buffering. You can retry from this point.', true);
-  }, 10000);
-}
-function failFilm(message, retry) {
-  clearFilmWait();
-  filmPlaying = false;
-  film.pause();
-  showFilmStatus(message, retry);
-}
-function handleFilmError() {
-  if (!retriedFilmNetwork && filmPlaying && film.error?.code === MediaError.MEDIA_ERR_NETWORK) {
-    retriedFilmNetwork = true;
-    seekFilm(filmTime(), true, true);
-  } else {
-    failFilm('The film could not load. Retry playback.', true);
-  }
-}
-function playFilm() {
-  const track = film;
-  const attempt = ++playAttempt;
-  track.play().catch(error => {
-    if (attempt !== playAttempt || track !== film || !screening.open || !filmPlaying || error.name === 'AbortError') return;
-    if (error.name === 'NotAllowedError') failFilm('Select Play to start the film.', false);
-    else handleFilmError();
-  });
-}
-function revealFilm() {
-  if (pendingChapter !== null || film.seeking || film.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
-  films.forEach(track => {
-    track.classList.toggle('is-current', track === film);
-    if (track === film) track.removeAttribute('aria-hidden');
-    else track.setAttribute('aria-hidden', 'true');
-  });
-}
-function loadFilm(track) {
-  if (track.hasAttribute('src')) return;
-  track.preload = 'auto';
-  track.src = track.dataset.src;
-}
-function bufferNextFilm() {
-  if (filmPart || film.paused || filmSplit - film.currentTime > 20) return;
-  const bufferedThrough = Math.min(filmSplit - .04, film.currentTime + 6);
-  for (let i = 0; i < film.buffered.length; i++) {
-    if (film.buffered.start(i) > film.currentTime || film.buffered.end(i) < bufferedThrough) continue;
-    // Leave enough buffered for the active track before requesting the following one.
-    const next = films[1];
-    loadFilm(next);
-    if (!next.seeking && next.currentTime > .04) next.currentTime = 0;
-    break;
-  }
-}
-function markChapter() {
-  const time = filmTime();
-  const active = chapters.filter(button => Number(button.dataset.chapter) <= time + .02).at(-1);
-  subchapters.hidden = active?.getAttribute('aria-controls') !== subchapters.id;
-  const currentSubchapter = subchapterButtons.filter(button => Number(button.dataset.subchapter) <= time + .02).at(-1);
-  subchapterButtons.forEach(button => {
-    if (!subchapters.hidden && time < 165.04 && button === currentSubchapter) button.setAttribute('aria-current', 'true');
-    else button.removeAttribute('aria-current');
-  });
-  chapters.forEach(button => {
-    if (button === active) button.setAttribute('aria-current', 'true');
-    else button.removeAttribute('aria-current');
-  });
-}
-function applyChapter() {
-  if (pendingChapter === null || film.readyState < HTMLMediaElement.HAVE_METADATA) return;
-  const time = pendingChapter - (filmPart ? filmSplit : 0);
-  if (Math.abs(film.currentTime - time) > .015) film.currentTime = time;
-  pendingChapter = null;
-  markChapter();
-  showTime();
-  revealFilm();
-}
-function seekFilm(seconds, play = filmPlaying, reload = false) {
-  clearFilmWait();
-  filmPlaying = play;
-  showFilmStatus();
-  pendingChapter = Math.max(0, Math.min(seconds, filmDuration - .04));
-  const nextPart = pendingChapter < filmSplit ? 0 : 1;
-  if (filmPart !== nextPart) {
-    film.pause();
-    releaseLoadingTrack(film);
-    filmPart = nextPart;
-    film = films[filmPart];
-  }
-  loadFilm(film);
-  if (reload || film.error) film.load();
-  applyChapter();
-  markChapter();
-  showTime();
-  const minimumReady = play ? HTMLMediaElement.HAVE_FUTURE_DATA : HTMLMediaElement.HAVE_CURRENT_DATA;
-  if (film.seeking || film.readyState < minimumReady) waitForFilm();
-  if (play) playFilm();
-}
-films.forEach(track => {
-  track.addEventListener('loadedmetadata', () => { if (track === film) applyChapter(); });
-  ['loadeddata', 'seeked', 'canplay', 'playing'].forEach(event => {
-    track.addEventListener(event, () => {
-      if (track !== film || !screening.open) return;
-      revealFilm();
-      const minimumReady = filmPlaying ? HTMLMediaElement.HAVE_FUTURE_DATA : HTMLMediaElement.HAVE_CURRENT_DATA;
-      if (pendingChapter === null && !track.seeking && track.readyState >= minimumReady) {
-        clearFilmWait();
-        showFilmStatus();
-      }
-    });
-  });
-  ['waiting', 'stalled'].forEach(event => {
-    track.addEventListener(event, () => {
-      if (track === film && (filmPlaying || track.seeking || pendingChapter !== null)
-        && track.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) waitForFilm();
-    });
-  });
-  track.addEventListener('error', () => {
-    if (track === film && screening.open && track.error) handleFilmError();
-  });
-  track.addEventListener('timeupdate', () => {
-    if (track !== film) return;
-    markChapter();
-    showTime();
-    bufferNextFilm();
-  });
-  track.addEventListener('ended', () => {
-    if (track === film && screening.open) seekFilm(filmPart ? 0 : filmSplit, true);
-  });
-});
-document.querySelectorAll('[data-film]').forEach(link => link.addEventListener('click', event => {
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || typeof screening.showModal !== 'function') return;
-  event.preventDefault();
-  filmTrigger = link;
-  retriedFilmNetwork = false;
-  screening.showModal();
-  document.body.style.overflow = 'hidden';
+screening.addEventListener('filmopen', () => {
   syncVisibleLoops();
-  // Pausing a preview alone leaves its range request downloading in some browsers.
-  loopSources.forEach((_, video) => releaseLoadingTrack(video));
-  seekFilm(Number(link.dataset.film), true);
-}));
-[...chapters, ...subchapterButtons].forEach(button => button.addEventListener('click', () => seekFilm(Number(button.dataset.chapter ?? button.dataset.subchapter), true)));
-document.querySelector('#close-film').addEventListener('click', () => screening.close());
-screening.addEventListener('click', event => {
-  if (event.target !== screening) return;
-  const rect = screening.getBoundingClientRect();
-  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) screening.close();
+  // Pausing alone can leave range requests running while the film buffers.
+  previewViews.forEach((_, video) => releaseLoadingTrack(video));
 });
-screening.addEventListener('close', () => {
-  filmPlaying = false;
-  scrubbing = false;
-  film.pause();
-  films.forEach(releaseLoadingTrack);
-  clearFilmWait();
-  pendingChapter = null;
-  document.body.style.overflow = '';
-  filmTrigger?.focus({ preventScroll: true });
-  syncVisibleLoops();
-});
+screening.addEventListener('close', syncVisibleLoops);
 
 const menuToggle = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#main-nav');
@@ -526,51 +398,4 @@ document.addEventListener('keydown', event => {
 });
 document.addEventListener('click', event => {
   if (!navigation.contains(event.target) && !menuToggle.contains(event.target)) setMenu(false);
-});
-
-playToggle.addEventListener('click', () => {
-  if (retryPlayback || !filmPlaying) {
-    seekFilm(filmTime(), true, retryPlayback);
-    return;
-  }
-  filmPlaying = false;
-  film.pause();
-  clearFilmWait();
-  showFilmStatus();
-});
-seek.disabled = false;
-seek.max = filmDuration - .04;
-showTime();
-// Update the slider immediately, but request the new byte range only once per drag.
-seek.addEventListener('input', () => {
-  scrubbing = true;
-  updateSeekPreview();
-});
-seek.addEventListener('change', () => {
-  scrubbing = false;
-  seekFilm(Number(seek.value));
-});
-
-function updateExpandLabel() {
-  const expanded = document.fullscreenElement === player || player.classList.contains('expanded');
-  expand.title = expanded ? 'Exit full screen' : 'Full screen';
-  expand.setAttribute('aria-label', expand.title);
-}
-expand.addEventListener('click', async () => {
-  if (document.fullscreenElement === player) await document.exitFullscreen();
-  else if (player.classList.contains('expanded')) player.classList.remove('expanded');
-  else {
-    try { await player.requestFullscreen(); }
-    catch { player.classList.add('expanded'); }
-  }
-  updateExpandLabel();
-});
-document.addEventListener('fullscreenchange', updateExpandLabel);
-document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && player.classList.contains('expanded')) {
-    event.preventDefault();
-    player.classList.remove('expanded');
-    updateExpandLabel();
-    expand.focus();
-  }
 });

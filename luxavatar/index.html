@@ -11,8 +11,8 @@
   <title>LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</title>
   <link rel="icon" href="media/mark.png">
   <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=51e1148b85">
-  <script defer src="app.js?v=037b044f79"></script>
+  <link rel="stylesheet" href="style.css?v=ae6b57dce0">
+  <script defer src="app.js?v=85115381c7"></script>
 </head>
 <body>
   <a class="skip" href="#project">Skip to project overview</a>
@@ -44,7 +44,7 @@
           <canvas aria-hidden="true"></canvas>
         </div>
       </div>
-      <video class="frame-source" id="opening-film" autoplay loop muted playsinline preload="auto" aria-hidden="true" tabindex="-1" src="media/opening/six-lights.mp4?cut=358-613"></video>
+      <video class="frame-source" id="opening-film" loop muted playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="media/opening/six-lights.mp4?cut=358-613"></video>
       <div class="opening-probes opening-layout" role="group" aria-label="Target illumination for each head avatar, shown by a mirror sphere on the left and a diffuse sphere on the right">
         <img src="media/opening/boxing-probes.png" alt="Boxing Ring mirror and diffuse spheres" title="Boxing Ring" width="223" height="104">
         <img src="media/opening/kiara-probes.png" alt="Kiara Interior mirror and diffuse spheres" title="Kiara Interior" width="223" height="104">
@@ -54,6 +54,7 @@
         <img src="media/opening/sunrise-probes.png" alt="Pink Sunrise mirror and diffuse spheres" title="Pink Sunrise" width="223" height="104">
       </div>
       <div class="opening-shade" aria-hidden="true"></div>
+      <button class="preview-toggle" type="button" hidden><span>Pause previews</span></button>
       <div class="opening-intro" id="project">
         <div class="shell">
           <h1 id="project-name">Lux<i>Avatar</i></h1>
@@ -68,7 +69,7 @@
           </div>
           <p class="affiliations" aria-label="Author affiliations"><span><sup>1</sup> Harbin Institute of Technology</span><span><sup>2</sup> Tsinghua University</span><span><sup>3</sup> The Hong Kong University of Science and Technology</span></p>
           <div class="intro-actions">
-            <a class="watch" data-film="0" href="media/film/luxavatar-01.mp4"><span class="play-triangle" aria-hidden="true"></span>Watch demo<span class="watch-time">02:51</span></a>
+            <a class="watch" data-film="0" href="#screening"><span class="play-triangle" aria-hidden="true"></span>Watch demo<span class="watch-time">02:51</span></a>
             <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
           </div>
         </div>
@@ -81,7 +82,10 @@
       <a class="brand" href="#opening" aria-label="LuxAvatar home"><img src="media/mark.png" alt="" width="34" height="34"><span>Lux<i>Avatar</i></span></a>
       <button class="menu-toggle" aria-controls="main-nav" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true"></span></button>
       <nav id="main-nav" aria-label="Main navigation"><a href="#method">Method</a><a href="#gallery">Gallery</a><a href="#free-view">3D control</a><a href="#ablations">Ablations</a></nav>
-      <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
+      <div class="head-actions">
+        <button class="preview-toggle" type="button" hidden><span>Pause previews</span></button>
+        <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
+      </div>
     </div>
   </header>
 
@@ -94,7 +98,7 @@
             <div class="method-step"><h3>3D Intrinsic Gaussian Head Proxy</h3><p>From a single reference portrait, our feed-forward network reconstructs a 3D intrinsic Gaussian head proxy in canonical space. Driving FLAME parameters deform the Gaussians, which are rasterized into per-frame PBR buffers for the target&nbsp;camera.</p></div>
             <div class="method-step"><h3>Two-Step Causal Neural Shader</h3><p>Conditioned on the PBR buffers, reference portrait and target illumination, the causal autoregressive neural shader generates relit video in two denoising steps per chunk.</p></div>
           </div>
-          <div class="method-demo" role="group" aria-label="From reference portrait and driving motion to a relit head avatar">
+          <div class="method-demo" data-stage="inputs" role="group" aria-label="From reference portrait and driving motion to a relit head avatar">
             <div class="method-inputs" role="group" aria-label="Reference and driving motion">
               <figure>
                 <img width="512" height="512" src="media/method/reference.png" alt="Reference portrait used to reconstruct and shade the head avatar">
@@ -102,26 +106,26 @@
               </figure>
               <div class="method-motion" role="group" aria-label="Driving video and its tracked motion">
                 <figure>
-                  <video playsinline muted loop preload="none" poster="media/method/driver.jpg" src="media/method/driver.mp4" aria-label="Driving video"></video>
+                  <div class="native-tile" data-slot="0"><img src="media/method/driver.jpg" alt="Driving video"><canvas aria-hidden="true"></canvas></div>
                   <figcaption>Driving video</figcaption>
                 </figure>
                 <figure>
-                  <video playsinline muted loop preload="none" poster="media/method/mesh.jpg" src="media/method/mesh.mp4" aria-label="Tracked FLAME mesh for the same driving frame"></video>
+                  <div class="native-tile" data-slot="1"><img src="media/method/mesh.jpg" alt="Tracked FLAME mesh for the same driving frame"><canvas aria-hidden="true"></canvas></div>
                   <figcaption>Tracked FLAME</figcaption>
                 </figure>
               </div>
             </div>
             <div class="buffers" role="group" aria-label="Animated PBR buffers, target illumination and relit avatar">
               <figure class="buffer-panel">
-                <video playsinline muted loop preload="none" poster="media/method/normal.jpg" src="media/method/normal.mp4" aria-label="Normal map"></video>
+                <div class="native-tile" data-slot="2"><img src="media/method/normal.jpg" alt="Normal map"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Normal map</figcaption>
               </figure>
               <figure class="buffer-panel">
-                <video playsinline muted loop preload="none" poster="media/method/basecolor.jpg" src="media/method/basecolor.mp4" aria-label="Base color"></video>
+                <div class="native-tile" data-slot="3"><img src="media/method/basecolor.jpg" alt="Base color"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Base color</figcaption>
               </figure>
               <figure class="buffer-panel">
-                <video playsinline muted loop preload="none" poster="media/method/roughness.jpg" src="media/method/roughness.mp4" aria-label="Roughness"></video>
+                <div class="native-tile" data-slot="4"><img src="media/method/roughness.jpg" alt="Roughness"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Roughness</figcaption>
               </figure>
               <figure class="buffer-light">
@@ -129,10 +133,11 @@
                 <figcaption>Target illumination</figcaption>
               </figure>
               <figure class="buffer-panel avatar-panel">
-                <video playsinline muted loop preload="none" poster="media/method/relit.jpg" src="media/method/relit.mp4" aria-label="Relit avatar"></video>
+                <div class="native-tile" data-slot="5" data-size="480"><img src="media/method/relit.jpg" alt="Relit avatar"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Relit avatar</figcaption>
               </figure>
             </div>
+            <video class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/method/synchronized.mp4"></video>
           </div>
         </div>
       </div>
@@ -147,8 +152,10 @@
 
         </div>
         <div class="wall-screen" role="img" aria-label="A growing cast of head avatars performing the same motion">
-          <div class="cast-grid"></div>
-          <video class="frame-source" id="wall-film" playsinline muted loop preload="none" aria-hidden="true" src="media/gallery/portraits.mp4"></video>
+          <div class="cast-grid" aria-hidden="true">
+            <img class="cast-poster" loading="lazy" width="900" height="900" src="media/gallery/cast-poster.webp" alt="">
+            <video id="wall-film" playsinline muted loop preload="none" data-src="media/gallery/portraits.mp4"></video>
+          </div>
         </div>
       </div>
     </section>
@@ -167,7 +174,13 @@
                 <div class="view-tools">
                   <div class="view-inputs">
                     <figure><div class="native-tile" data-slot="9"><img loading="lazy" src="media/viewpoint/driver.jpg" alt="Driving performance"><canvas aria-hidden="true"></canvas></div><figcaption>Driving video</figcaption></figure>
-                    <figure><div class="env-window"><img class="view-env" src="media/viewpoint/R05.jpg" alt="Target environment map"></div><figcaption>Environment light</figcaption></figure>
+                    <figure class="view-light" data-light="">
+                      <div class="env-window">
+                        <img data-light="R05" data-full-src="media/viewpoint/R05.jpg" src="data:image/webp;base64,UklGRhgBAABXRUJQVlA4IAwBAABwCACdASpQACgAPtFYo0woJSMiMzVYAQAaCWcAyCA00pmJBfTF9dsSMZznSPXzCP3e2/h60V+SwXGM1DX06mAMAFrKVZpiqtrgNAwAAP3G2bxOQKawn3XFLbm2WoZwSrfCjYhNaJrBnWjL2BSP2ZBp9gHnNg7GrdP/J+BGU6NLb7WDaZ4e/UccBOq8HhV9R8CQi+PUYd8VwUwBreIaFyOC3AkuuUMiIKWZd4EcNDDxa8OH3NY9U9vu/sDqnZWar+QElQWladQqBP8eymgx+luizix2YZtEa+uaI0feUnMrt3J56E/UW7xlSLtzQ4X0mmmBwgyZqkZluzCql8eAmhGm+P092GddLhKgEAAA" alt="Warm indoor environment">
+                        <img data-light="R06" data-full-src="media/viewpoint/R06.jpg" src="data:image/webp;base64,UklGRkABAABXRUJQVlA4IDQBAACQCACdASpQACgAPs1UoEunpKMhrvts+PAZiUAYZXyIWGYCbfdPbVQZmnD6YDGKVdUSQ6GVr5whG8Rt3kcTGK6hjOnkCvFqWeDAuimhgAD+8IpnHKV7T1qBAT5HO0ggr8YSCVIkHWwcnvXzqC6T1GS1MiXdA/vvdoNIoW25dDN2Y2U2ayUMpn5TwWWcNHKPtHRDnhK9FeUATRycNwlh8ll0Ukyt1rThkVfdBcUfD61vJGGYp/kff1jiRjQF+IX+bo9zSj65i4cBgVV0e1egbBkkQ4eNPgQKg3sxWkEDYsjdyId/3Zvx70tK/kZdlNo4Ce3tYW+PbGxMaZKTYMYoSigUyb3w203igH+Es/KJgEBqldTGJt1Lh7tePdABHlK6DFGtUtjZyDCYfqrXfDO1uIFXHgAAAA==" alt="Purple-lit indoor environment">
+                      </div>
+                      <figcaption>Environment light</figcaption>
+                    </figure>
                   </div>
                   <figure class="trajectory">
                     <div class="trajectory-plot" role="img" aria-label="A camera follows a figure-eight path around the head. Its viewing direction and recent path are highlighted.">
@@ -190,7 +203,7 @@
                 <div class="native-tile" data-slot="8"><img loading="lazy" src="media/viewpoint/portrait-8.jpg" alt="Animated head avatar N380"><canvas aria-hidden="true"></canvas></div>
               </div>
             </div>
-            <video id="view-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" src="media/viewpoint/portraits.mp4"></video>
+            <video id="view-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/viewpoint/portraits.mp4"></video>
           </div>
         </section>
       </div>
@@ -237,7 +250,7 @@
             <div class="native-tile" data-slot="6"><img loading="lazy" src="media/training-proxy/portrait-6.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>Ground truth</figcaption>
           </figure>
-          <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" src="media/training-proxy/portraits.mp4"></video>
+          <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/training-proxy/portraits.mp4"></video>
         </div>
       </section>
       <section class="shell data-study" id="hybrid-data" aria-labelledby="data-title">
@@ -247,6 +260,11 @@
           <div class="data-row">
             <h3>Fixed illumination</h3>
             <div class="data-grid native-player" id="data-fixed">
+              <figure class="data-input"><img class="data-reference" loading="lazy" src="media/hybrid/reference.jpg" alt=""><figcaption>Reference portrait</figcaption></figure>
+              <figure class="data-input data-probe">
+                <div class="native-tile"><img loading="lazy" src="media/hybrid/rotating-2.jpg" alt=""></div>
+                <figcaption>Target lighting</figcaption>
+              </figure>
               <figure>
                 <div class="native-tile" data-slot="0"><img loading="lazy" src="media/hybrid/fixed-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption>w/o Reverse Pairs</figcaption>
@@ -263,7 +281,7 @@
                 <div class="native-tile" data-slot="3"><img loading="lazy" src="media/hybrid/fixed-3.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption class="data-full">Full model</figcaption>
               </figure>
-              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" src="media/hybrid/fixed.mp4"></video>
+              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/hybrid/fixed.mp4"></video>
             </div>
           </div>
           <div class="data-row">
@@ -282,14 +300,14 @@
                 <div class="native-tile" data-slot="1"><img loading="lazy" src="media/hybrid/rotating-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption class="data-full">Full model</figcaption>
               </figure>
-              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" src="media/hybrid/rotating.mp4"></video>
+              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/hybrid/rotating.mp4"></video>
             </div>
           </div>
       </section>
       <section class="shell" id="streaming" aria-labelledby="streaming-title">
         <header class="study-heading section-head">
           <h2 id="streaming-title">Long-sequence stability</h2>
-          <p>Each lighting condition uses a single 984-frame streaming inference run. <strong class="stream-speed">3× speed</strong></p>
+          <p>This 873-frame preview shows a single 984-frame streaming inference run per lighting condition. <strong class="stream-speed">3× speed</strong></p>
         </header>
         <div class="stream-demo native-player">
           <div class="stream-group">
@@ -313,7 +331,7 @@
               </figure>
             </div>
           </div>
-          <video id="stream-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" src="media/streaming/sequence-16fps.mp4"></video>
+          <video id="stream-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/streaming/sequence-16fps.mp4"></video>
         </div>
       </section>
     </section>
@@ -325,26 +343,377 @@
     </div>
   </footer>
   <dialog id="screening" aria-labelledby="screening-title">
-    <div class="screen-head"><div><div class="eyebrow gold">LuxAvatar</div><h2 id="screening-title">Research film</h2></div><button class="close" id="close-film" aria-label="Close film" autofocus>×</button></div>
+    <div class="screen-head">
+      <div><div class="eyebrow gold">LuxAvatar</div><h2 id="screening-title">Research film</h2></div>
+      <label class="film-quality">Quality
+        <select id="film-quality">
+          <option value="auto">Auto</option>
+          <option value="original">Original · 1080p</option>
+          <option value="small">Data saver · 360p</option>
+        </select>
+      </label>
+      <button class="close" id="close-film" aria-label="Close film" autofocus>×</button>
+    </div>
     <div class="clip-player">
       <div class="film-frames" data-split="85.92" data-duration="170.96">
-        <video class="film-track is-current" playsinline muted preload="none" data-src="media/film/luxavatar-01.mp4" poster="media/film/poster.jpg" aria-label="LuxAvatar research film, with on-screen explanations"></video>
-        <video class="film-track" playsinline muted preload="none" data-src="media/film/luxavatar-02.mp4" aria-label="LuxAvatar research film, with on-screen explanations" aria-hidden="true"></video>
+        <video class="film-track is-current" playsinline muted preload="none" data-src="media/film/luxavatar-01.mp4" data-small="media/film/luxavatar-01-360p.mp4" poster="media/film/poster.jpg" aria-label="LuxAvatar research film, with on-screen explanations"></video>
+        <video class="film-track" playsinline muted preload="none" data-src="media/film/luxavatar-02.mp4" data-small="media/film/luxavatar-02-360p.mp4" aria-label="LuxAvatar research film, with on-screen explanations" aria-hidden="true"></video>
       </div>
       <div class="film-status" role="status" hidden></div>
+      <div class="playbar">
+        <button type="button" class="toggle-video">Pause</button>
+        <output class="play-clock" aria-live="off">0:00</output>
+        <input type="range" class="play-seek" min="0" max="1" step="0.04" value="0" aria-label="Seek video" disabled>
+        <button type="button" class="expand-video" aria-label="Full screen" title="Full screen"><span aria-hidden="true">⛶</span></button>
+      </div>
     </div>
     <div class="chapters" role="group" aria-label="Film chapters">
-      <button data-chapter="4.88">3D Intrinsic Gaussian Head Proxy</button><button data-chapter="12.48">Two-Step Causal Neural Shader</button><button data-chapter="18.12">Variations in illumination</button><button data-chapter="25.16">Gallery</button><button data-chapter="45.32">3D control</button><button data-chapter="63.36">Environment-map relighting</button><button data-chapter="101">Background harmonization</button><button data-chapter="116.56" aria-controls="ablation-chapters">Ablations</button>
-      <div id="ablation-chapters" class="subchapters" role="group" aria-label="Ablation chapters" hidden><span>Ablations</span><button data-subchapter="116.56">Training strategy and intrinsic proxy</button><button data-subchapter="125.92">Hybrid training data</button><button data-subchapter="144.28">Long-sequence stability</button></div>
+      <button data-chapter="4.88" data-landing="5.40">3D Intrinsic Gaussian Head Proxy</button>
+      <button data-chapter="12.48" data-landing="13.00">Two-Step Causal Neural Shader</button>
+      <button data-chapter="18.12" data-landing="18.72">Variations in illumination</button>
+      <button data-chapter="25.16" data-landing="26.72">Gallery</button>
+      <button data-chapter="45.32">3D control</button>
+      <button data-chapter="63.36" data-landing="64.00">Environment-map relighting</button>
+      <button data-chapter="101" data-landing="101.32">Background harmonization</button>
+      <button data-chapter="116.56" data-landing="116.88" aria-controls="ablation-chapters">Ablations</button>
+      <div id="ablation-chapters" class="subchapters" role="group" aria-label="Ablation chapters" hidden>
+        <span>Ablations</span>
+        <button data-subchapter="116.56" data-landing="116.88">Training strategy and intrinsic proxy</button>
+        <button data-subchapter="125.92" data-landing="126.24">Hybrid training data</button>
+        <button data-subchapter="144.28" data-landing="144.60">Long-sequence stability</button>
+      </div>
+    </div>
+    <div class="film-files">
+      <h2>Research film</h2>
+      <p>Part 1 · 0:00–1:26 <a href="media/film/luxavatar-01.mp4">1080p</a> <a href="media/film/luxavatar-01-360p.mp4">360p</a></p>
+      <p>Part 2 · 1:26–2:51 <a href="media/film/luxavatar-02.mp4">1080p</a> <a href="media/film/luxavatar-02-360p.mp4">360p</a></p>
+      <a href="#project">Back to project</a>
     </div>
   </dialog>
-  <template id="playbar-template">
-    <div class="playbar">
-      <button type="button" class="toggle-video">Pause</button>
-      <output class="play-clock" aria-live="off">0:00</output>
-      <input type="range" class="play-seek" min="0" max="1" step="0.04" value="0" aria-label="Seek video" disabled>
-      <button type="button" class="expand-video" aria-label="Full screen" title="Full screen"><span aria-hidden="true">⛶</span></button>
-    </div>
-  </template>
+  <script>
+  // The film controls work as soon as the HTML arrives, even while the exhibit script is loading.
+  (() => {
+    const screening = document.querySelector('#screening');
+    const filmFrames = document.querySelector('.film-frames');
+    const films = [...filmFrames.querySelectorAll('video')];
+    const filmSplit = Number(filmFrames.dataset.split);
+    const filmDuration = Number(filmFrames.dataset.duration);
+    const chapters = [...document.querySelectorAll('[data-chapter]')];
+    let film = films[0];
+    let filmPart = 0;
+    let pendingChapter = null;
+    let filmTrigger = null;
+
+    const subchapters = document.querySelector('#ablation-chapters');
+    const subchapterButtons = [...subchapters.querySelectorAll('[data-subchapter]')];
+    const player = screening.querySelector('.clip-player');
+    const quality = screening.querySelector('#film-quality');
+    const playToggle = player.querySelector('.toggle-video');
+    const filmStatus = player.querySelector('.film-status');
+    const seek = player.querySelector('.play-seek');
+    const clock = player.querySelector('.play-clock');
+    const expand = player.querySelector('.expand-video');
+    let filmPlaying = false;
+    let filmWaitTimer = null;
+    let retryPlayback = false;
+    let retriedFilmNetwork = false;
+    let playAttempt = 0;
+    let scrubbing = false;
+    let useSmallFilm = false;
+
+    function preferSmallFilm() {
+      const network = navigator.connection;
+      return quality.value === 'small' || (quality.value === 'auto' && network &&
+        (network.saveData || ['slow-2g', '2g', '3g'].includes(network.effectiveType) ||
+          (network.downlink > 0 && network.downlink < 8.5)));
+    }
+
+    function unloadFilm(track) {
+      if (!track.hasAttribute('src')) return;
+      track.removeAttribute('src');
+      track.load();
+    }
+
+    // Keep chapter links and seeking on the original timeline across both MP4 parts.
+    function filmTime() {
+      return pendingChapter ?? (filmPart ? filmSplit : 0) + film.currentTime;
+    }
+    function showTime(time = filmTime()) {
+      if (scrubbing) return;
+      seek.value = time;
+      updateSeekPreview();
+    }
+    function updateSeekPreview() {
+      const seconds = Math.floor(Number(seek.value));
+      clock.value = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+      seek.setAttribute('aria-valuetext', clock.value);
+    }
+    function showFilmStatus(message = '', retry = false) {
+      retryPlayback = retry;
+      if (filmStatus.textContent !== message) filmStatus.textContent = message;
+      filmStatus.hidden = !message;
+      playToggle.textContent = retry ? 'Retry' : filmPlaying ? 'Pause' : 'Play';
+    }
+    function clearFilmWait() {
+      clearTimeout(filmWaitTimer);
+      filmWaitTimer = null;
+    }
+    function waitForFilm() {
+      if (!screening.open || document.hidden || filmWaitTimer !== null || retryPlayback) return;
+      const canDownshift = quality.value === 'auto' && !useSmallFilm && filmPlaying;
+      showFilmStatus('Buffering film…');
+      filmWaitTimer = setTimeout(() => {
+        filmWaitTimer = null;
+        if (canDownshift && filmPlaying) {
+          // Actual stalls also catch slow routes when a browser exposes no network estimate.
+          useSmallFilm = true;
+          seekFilm(filmTime(), true);
+        } else {
+          showFilmStatus('The film is still buffering. You can retry from this point.', true);
+        }
+      }, canDownshift ? 4000 : 10000);
+    }
+    function failFilm(message, retry) {
+      clearFilmWait();
+      filmPlaying = false;
+      film.pause();
+      showFilmStatus(message, retry);
+    }
+    function handleFilmError() {
+      if (!retriedFilmNetwork && filmPlaying && film.error?.code === MediaError.MEDIA_ERR_NETWORK) {
+        retriedFilmNetwork = true;
+        seekFilm(filmTime(), true, true);
+      } else {
+        failFilm('The film could not load. Retry playback.', true);
+      }
+    }
+    function playFilm() {
+      if (document.hidden) return;
+      const track = film;
+      const attempt = ++playAttempt;
+      track.play().catch(error => {
+        if (attempt !== playAttempt || track !== film || !screening.open || !filmPlaying || error.name === 'AbortError') return;
+        if (error.name === 'NotAllowedError') failFilm('Select Play to start the film.', false);
+        else handleFilmError();
+      });
+    }
+    function showCurrentTrack() {
+      films.forEach(track => {
+        track.classList.toggle('is-current', track === film);
+        if (track === film) track.removeAttribute('aria-hidden');
+        else track.setAttribute('aria-hidden', 'true');
+      });
+    }
+    function revealFilm() {
+      if (pendingChapter === null && !film.seeking && film.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) showCurrentTrack();
+    }
+    function loadFilm(track) {
+      const source = useSmallFilm ? track.dataset.small : track.dataset.src;
+      if (track.getAttribute('src') === source) return;
+      track.preload = 'auto';
+      track.src = source;
+      track.load();
+    }
+    function bufferNextFilm() {
+      if (!screening.open || document.hidden || filmPart || film.paused || filmSplit - film.currentTime > 20) return;
+      const bufferedThrough = Math.min(filmSplit - .04, film.currentTime + 6);
+      for (let i = 0; i < film.buffered.length; i++) {
+        if (film.buffered.start(i) > film.currentTime || film.buffered.end(i) < bufferedThrough) continue;
+        // Leave enough buffered for the active track before requesting the following one.
+        const next = films[1];
+        loadFilm(next);
+        if (!next.seeking && next.currentTime > .04) next.currentTime = 0;
+        break;
+      }
+    }
+    function markChapter() {
+      const time = filmTime();
+      const active = chapters.filter(button => Number(button.dataset.chapter) <= time + .02).at(-1);
+      subchapters.hidden = active?.getAttribute('aria-controls') !== subchapters.id;
+      const currentSubchapter = subchapterButtons.filter(button => Number(button.dataset.subchapter) <= time + .02).at(-1);
+      subchapterButtons.forEach(button => {
+        if (!subchapters.hidden && time < 165.04 && button === currentSubchapter) button.setAttribute('aria-current', 'true');
+        else button.removeAttribute('aria-current');
+      });
+      chapters.forEach(button => {
+        if (button === active) button.setAttribute('aria-current', 'true');
+        else button.removeAttribute('aria-current');
+      });
+    }
+    function applyChapter() {
+      if (pendingChapter === null || film.readyState < HTMLMediaElement.HAVE_METADATA) return;
+      const time = pendingChapter - (filmPart ? filmSplit : 0);
+      if (Math.abs(film.currentTime - time) > .015) film.currentTime = time;
+      pendingChapter = null;
+      markChapter();
+      showTime();
+      revealFilm();
+    }
+    function seekFilm(seconds, play = filmPlaying, reload = false) {
+      clearFilmWait();
+      filmPlaying = play;
+      showFilmStatus();
+      pendingChapter = Math.max(0, Math.min(seconds, filmDuration - .04));
+      const nextPart = pendingChapter < filmSplit ? 0 : 1;
+      if (filmPart !== nextPart) {
+        film.pause();
+        if (film.networkState === HTMLMediaElement.NETWORK_LOADING) unloadFilm(film);
+        filmPart = nextPart;
+        film = films[filmPart];
+      }
+      if (reload || film.error) unloadFilm(film);
+      loadFilm(film);
+      applyChapter();
+      markChapter();
+      showTime();
+      const minimumReady = play ? HTMLMediaElement.HAVE_FUTURE_DATA : HTMLMediaElement.HAVE_CURRENT_DATA;
+      if (film.seeking || film.readyState < minimumReady) waitForFilm();
+      if (play) playFilm();
+    }
+    films.forEach(track => {
+      track.addEventListener('loadedmetadata', () => { if (track === film) applyChapter(); });
+      ['loadeddata', 'seeked', 'canplay', 'playing'].forEach(event => {
+        track.addEventListener(event, () => {
+          if (track !== film || !screening.open) return;
+          revealFilm();
+          const minimumReady = filmPlaying ? HTMLMediaElement.HAVE_FUTURE_DATA : HTMLMediaElement.HAVE_CURRENT_DATA;
+          if (pendingChapter === null && !track.seeking && track.readyState >= minimumReady) {
+            clearFilmWait();
+            showFilmStatus();
+          }
+        });
+      });
+      ['waiting', 'stalled'].forEach(event => {
+        track.addEventListener(event, () => {
+          if (track === film && (filmPlaying || track.seeking || pendingChapter !== null)
+            && track.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) waitForFilm();
+        });
+      });
+      track.addEventListener('error', () => {
+        if (track === film && screening.open && track.error) handleFilmError();
+      });
+      track.addEventListener('timeupdate', () => {
+        if (track !== film) return;
+        markChapter();
+        showTime();
+        bufferNextFilm();
+      });
+      track.addEventListener('ended', () => {
+        if (track === film && screening.open && filmPlaying) seekFilm(filmPart ? 0 : filmSplit, true);
+      });
+    });
+    function openFilm(link) {
+      if (screening.open) return;
+      filmTrigger = link;
+      useSmallFilm = preferSmallFilm();
+      retriedFilmNetwork = false;
+      screening.showModal();
+      document.body.style.overflow = 'hidden';
+      screening.dispatchEvent(new Event('filmopen'));
+      seekFilm(Number(link.dataset.film), true);
+    }
+    document.querySelectorAll('[data-film]').forEach(link => link.addEventListener('click', event => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || typeof screening.showModal !== 'function') return;
+      event.preventDefault();
+      openFilm(link);
+    }));
+    quality.addEventListener('change', () => {
+      const position = filmTime();
+      useSmallFilm = preferSmallFilm();
+      retriedFilmNetwork = false;
+      films.filter(track => track !== film).forEach(unloadFilm);
+      seekFilm(position, filmPlaying);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (!screening.open || !filmPlaying) return;
+      if (document.hidden) {
+        film.pause();
+        clearFilmWait();
+      } else {
+        playFilm();
+        if (film.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) waitForFilm();
+      }
+    });
+    // Direct jumps land on a readable frame; continuous playback keeps the original cut boundaries.
+    [...chapters, ...subchapterButtons].forEach(button => button.addEventListener('click', () => {
+      const { landing, chapter, subchapter } = button.dataset;
+      seekFilm(Number(landing ?? chapter ?? subchapter), true);
+    }));
+    document.querySelector('#close-film').addEventListener('click', () => screening.close());
+    screening.addEventListener('click', event => {
+      if (event.target !== screening) return;
+      const rect = screening.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) screening.close();
+    });
+    screening.addEventListener('close', () => {
+      filmPlaying = false;
+      scrubbing = false;
+      film.pause();
+      films.forEach(unloadFilm);
+      filmPart = 0;
+      film = films[0];
+      showCurrentTrack();
+      player.classList.remove('expanded');
+      updateExpandLabel();
+      clearFilmWait();
+      pendingChapter = null;
+      document.body.style.overflow = '';
+      filmTrigger?.focus({ preventScroll: true });
+    });
+
+    playToggle.addEventListener('click', () => {
+      if (retryPlayback || !filmPlaying) {
+        seekFilm(filmTime(), true, retryPlayback);
+        return;
+      }
+      filmPlaying = false;
+      film.pause();
+      clearFilmWait();
+      showFilmStatus();
+    });
+    seek.disabled = false;
+    seek.max = filmDuration - .04;
+    showTime();
+    // Update the slider immediately, but request the new byte range only once per drag.
+    seek.addEventListener('input', () => {
+      scrubbing = true;
+      updateSeekPreview();
+    });
+    seek.addEventListener('change', () => {
+      scrubbing = false;
+      seekFilm(Number(seek.value));
+    });
+
+    function updateExpandLabel() {
+      const expanded = document.fullscreenElement === player || player.classList.contains('expanded');
+      expand.title = expanded ? 'Exit full screen' : 'Full screen';
+      expand.setAttribute('aria-label', expand.title);
+    }
+    expand.addEventListener('click', async () => {
+      if (document.fullscreenElement === player) await document.exitFullscreen();
+      else if (player.classList.contains('expanded')) player.classList.remove('expanded');
+      else {
+        try { await player.requestFullscreen(); }
+        catch { player.classList.add('expanded'); }
+      }
+      updateExpandLabel();
+    });
+    document.addEventListener('fullscreenchange', updateExpandLabel);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && player.classList.contains('expanded')) {
+        event.preventDefault();
+        player.classList.remove('expanded');
+        updateExpandLabel();
+        expand.focus();
+      }
+    });
+
+    // A click while the HTML was still arriving lands on the same in-page fallback.
+    if (location.hash === '#screening' && typeof screening.showModal === 'function') {
+      history.replaceState(null, '', location.pathname + location.search);
+      openFilm(document.querySelector('[data-film]'));
+    }
+  })();
+  </script>
 </body>
 </html>

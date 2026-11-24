@@ -11,8 +11,8 @@
   <title>LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</title>
   <link rel="icon" href="media/mark.png">
   <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css">
-  <script defer src="app.js"></script>
+  <link rel="stylesheet" href="style.css?v=20261124">
+  <script defer src="app.js?v=20261124"></script>
 </head>
 <body>
   <a class="skip" href="#project">Skip to project overview</a>
@@ -66,7 +66,7 @@
             <a href="https://felixcheng97.github.io/" target="_blank" rel="noopener">Ka Leong Cheng<sup>3</sup></a>
             <a href="https://homepage.hit.edu.cn/zhangshengping" target="_blank" rel="noopener">Shengping Zhang<sup>1</sup></a>
           </div>
-          <p class="affiliations" aria-label="Author affiliations" tabindex="0"><span><sup>1</sup> Harbin Institute of Technology</span><span><sup>2</sup> Tsinghua University</span><span><sup>3</sup> The Hong Kong University of Science and Technology</span></p>
+          <p class="affiliations" aria-label="Author affiliations"><span><sup>1</sup> Harbin Institute of Technology</span><span><sup>2</sup> Tsinghua University</span><span><sup>3</sup> The Hong Kong University of Science and Technology</span></p>
           <div class="intro-actions">
             <a class="watch" data-film="0" href="media/film/luxavatar-01.mp4"><span class="play-triangle" aria-hidden="true"></span>Watch demo<span class="watch-time">02:51</span></a>
             <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
@@ -331,6 +331,7 @@
         <video class="film-track is-current" playsinline muted preload="none" data-src="media/film/luxavatar-01.mp4" poster="media/film/poster.jpg" aria-label="LuxAvatar research film, with on-screen explanations"></video>
         <video class="film-track" playsinline muted preload="none" data-src="media/film/luxavatar-02.mp4" aria-label="LuxAvatar research film, with on-screen explanations" aria-hidden="true"></video>
       </div>
+      <div class="film-status" role="status" hidden></div>
     </div>
     <div class="chapters" role="group" aria-label="Film chapters">
       <button data-chapter="4.88">3D Intrinsic Gaussian Head Proxy</button><button data-chapter="12.48">Two-Step Causal Neural Shader</button><button data-chapter="18.12">Variations in illumination</button><button data-chapter="25.16">Gallery</button><button data-chapter="45.32">3D control</button><button data-chapter="63.36">Environment-map relighting</button><button data-chapter="101">Background harmonization</button><button data-chapter="116.56" aria-controls="ablation-chapters">Ablations</button>
@@ -339,6 +340,7 @@
   </dialog>
   <template id="playbar-template">
     <div class="playbar">
+      <button type="button" class="toggle-video">Pause</button>
       <output class="play-clock" aria-live="off">0:00</output>
       <input type="range" class="play-seek" min="0" max="1" step="0.04" value="0" aria-label="Seek video" disabled>
       <button type="button" class="expand-video" aria-label="Full screen" title="Full screen"><span aria-hidden="true">⛶</span></button>

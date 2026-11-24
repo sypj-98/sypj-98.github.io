@@ -12,8 +12,11 @@ let pendingChapter = null;
 let filmTrigger = null;
 
 const visibleLoops = new Set();
+const loopSources = new Map();
 function syncLoop(video) {
   if (visibleLoops.has(video) && !document.hidden && !screening.open) {
+    if (!video.hasAttribute('src')) video.src = loopSources.get(video);
+    if (video.error) video.load();
     video.play().catch(() => {});
   } else {
     video.pause();
@@ -22,10 +25,26 @@ function syncLoop(video) {
 function syncVisibleLoops() {
   visibleLoops.forEach(syncLoop);
 }
+function releaseLoadingTrack(track) {
+  if (track.networkState !== HTMLMediaElement.NETWORK_LOADING) return;
+  track.removeAttribute('src');
+  track.load();
+}
 function observeLoop(video, view = video, threshold = 0) {
+  loopSources.set(video, video.getAttribute('src'));
+  let retried = false;
+  video.addEventListener('error', () => {
+    if (retried || !visibleLoops.has(video)) return;
+    retried = true;
+    // Failed requests can look like unsupported media until the first frame is received.
+    setTimeout(() => { if (video.error) syncLoop(video); }, 1000);
+  });
   new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting && entry.intersectionRatio >= threshold) visibleLoops.add(video);
-    else visibleLoops.delete(video);
+    else {
+      visibleLoops.delete(video);
+      retried = false;
+    }
     syncLoop(video);
     if (threshold > 0 && !entry.isIntersecting && video.readyState >= 1) video.currentTime = 0;
   }, { threshold: [0, threshold] }).observe(view);
@@ -274,9 +293,74 @@ connectTiles(document.querySelector('#data-rotating'), 3, 480);
 
 const subchapters = document.querySelector('#ablation-chapters');
 const subchapterButtons = [...subchapters.querySelectorAll('[data-subchapter]')];
+const player = screening.querySelector('.clip-player');
+player.append(document.querySelector('#playbar-template').content.cloneNode(true));
+const playToggle = player.querySelector('.toggle-video');
+const filmStatus = player.querySelector('.film-status');
+const seek = player.querySelector('.play-seek');
+const clock = player.querySelector('.play-clock');
+const expand = player.querySelector('.expand-video');
+let filmPlaying = false;
+let filmWaitTimer = null;
+let retryPlayback = false;
+let retriedFilmNetwork = false;
+let playAttempt = 0;
+let scrubbing = false;
+
 // Keep chapter links and seeking on the original timeline across both MP4 parts.
 function filmTime() {
   return pendingChapter ?? (filmPart ? filmSplit : 0) + film.currentTime;
+}
+function showTime(time = filmTime()) {
+  if (scrubbing) return;
+  seek.value = time;
+  updateSeekPreview();
+}
+function updateSeekPreview() {
+  const seconds = Math.floor(Number(seek.value));
+  clock.value = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+  seek.setAttribute('aria-valuetext', clock.value);
+}
+function showFilmStatus(message = '', retry = false) {
+  retryPlayback = retry;
+  if (filmStatus.textContent !== message) filmStatus.textContent = message;
+  filmStatus.hidden = !message;
+  playToggle.textContent = retry ? 'Retry' : filmPlaying ? 'Pause' : 'Play';
+}
+function clearFilmWait() {
+  clearTimeout(filmWaitTimer);
+  filmWaitTimer = null;
+}
+function waitForFilm() {
+  if (!screening.open || filmWaitTimer !== null || retryPlayback) return;
+  showFilmStatus('Buffering film…');
+  filmWaitTimer = setTimeout(() => {
+    filmWaitTimer = null;
+    showFilmStatus('The film is still buffering. You can retry from this point.', true);
+  }, 10000);
+}
+function failFilm(message, retry) {
+  clearFilmWait();
+  filmPlaying = false;
+  film.pause();
+  showFilmStatus(message, retry);
+}
+function handleFilmError() {
+  if (!retriedFilmNetwork && filmPlaying && film.error?.code === MediaError.MEDIA_ERR_NETWORK) {
+    retriedFilmNetwork = true;
+    seekFilm(filmTime(), true, true);
+  } else {
+    failFilm('The film could not load. Retry playback.', true);
+  }
+}
+function playFilm() {
+  const track = film;
+  const attempt = ++playAttempt;
+  track.play().catch(error => {
+    if (attempt !== playAttempt || track !== film || !screening.open || !filmPlaying || error.name === 'AbortError') return;
+    if (error.name === 'NotAllowedError') failFilm('Select Play to start the film.', false);
+    else handleFilmError();
+  });
 }
 function revealFilm() {
   if (pendingChapter !== null || film.seeking || film.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
@@ -287,7 +371,9 @@ function revealFilm() {
   });
 }
 function loadFilm(track) {
-  if (!track.hasAttribute('src')) track.src = track.dataset.src;
+  if (track.hasAttribute('src')) return;
+  track.preload = 'auto';
+  track.src = track.dataset.src;
 }
 function bufferNextFilm() {
   if (filmPart || film.paused || filmSplit - film.currentTime > 20) return;
@@ -296,7 +382,6 @@ function bufferNextFilm() {
     if (film.buffered.start(i) > film.currentTime || film.buffered.end(i) < bufferedThrough) continue;
     // Leave enough buffered for the active track before requesting the following one.
     const next = films[1];
-    next.preload = 'auto';
     loadFilm(next);
     if (!next.seeking && next.currentTime > .04) next.currentTime = 0;
     break;
@@ -322,29 +407,56 @@ function applyChapter() {
   if (Math.abs(film.currentTime - time) > .015) film.currentTime = time;
   pendingChapter = null;
   markChapter();
+  showTime();
   revealFilm();
 }
-function seekFilm(seconds, play = !film.paused) {
+function seekFilm(seconds, play = filmPlaying, reload = false) {
+  clearFilmWait();
+  filmPlaying = play;
+  showFilmStatus();
   pendingChapter = Math.max(0, Math.min(seconds, filmDuration - .04));
   const nextPart = pendingChapter < filmSplit ? 0 : 1;
   if (filmPart !== nextPart) {
     film.pause();
+    releaseLoadingTrack(film);
     filmPart = nextPart;
     film = films[filmPart];
   }
   loadFilm(film);
+  if (reload || film.error) film.load();
   applyChapter();
   markChapter();
-  if (play) film.play().catch(() => {});
+  showTime();
+  const minimumReady = play ? HTMLMediaElement.HAVE_FUTURE_DATA : HTMLMediaElement.HAVE_CURRENT_DATA;
+  if (film.seeking || film.readyState < minimumReady) waitForFilm();
+  if (play) playFilm();
 }
 films.forEach(track => {
   track.addEventListener('loadedmetadata', () => { if (track === film) applyChapter(); });
-  ['loadeddata', 'seeked', 'playing'].forEach(event => {
-    track.addEventListener(event, () => { if (track === film) revealFilm(); });
+  ['loadeddata', 'seeked', 'canplay', 'playing'].forEach(event => {
+    track.addEventListener(event, () => {
+      if (track !== film || !screening.open) return;
+      revealFilm();
+      const minimumReady = filmPlaying ? HTMLMediaElement.HAVE_FUTURE_DATA : HTMLMediaElement.HAVE_CURRENT_DATA;
+      if (pendingChapter === null && !track.seeking && track.readyState >= minimumReady) {
+        clearFilmWait();
+        showFilmStatus();
+      }
+    });
+  });
+  ['waiting', 'stalled'].forEach(event => {
+    track.addEventListener(event, () => {
+      if (track === film && (filmPlaying || track.seeking || pendingChapter !== null)
+        && track.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) waitForFilm();
+    });
+  });
+  track.addEventListener('error', () => {
+    if (track === film && screening.open && track.error) handleFilmError();
   });
   track.addEventListener('timeupdate', () => {
     if (track !== film) return;
     markChapter();
+    showTime();
     bufferNextFilm();
   });
   track.addEventListener('ended', () => {
@@ -355,9 +467,12 @@ document.querySelectorAll('[data-film]').forEach(link => link.addEventListener('
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || typeof screening.showModal !== 'function') return;
   event.preventDefault();
   filmTrigger = link;
+  retriedFilmNetwork = false;
   screening.showModal();
   document.body.style.overflow = 'hidden';
   syncVisibleLoops();
+  // Pausing a preview alone leaves its range request downloading in some browsers.
+  loopSources.forEach((_, video) => releaseLoadingTrack(video));
   seekFilm(Number(link.dataset.film), true);
 }));
 [...chapters, ...subchapterButtons].forEach(button => button.addEventListener('click', () => seekFilm(Number(button.dataset.chapter ?? button.dataset.subchapter), true)));
@@ -368,7 +483,11 @@ screening.addEventListener('click', event => {
   if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) screening.close();
 });
 screening.addEventListener('close', () => {
+  filmPlaying = false;
+  scrubbing = false;
   film.pause();
+  films.forEach(releaseLoadingTrack);
+  clearFilmWait();
   pendingChapter = null;
   document.body.style.overflow = '';
   filmTrigger?.focus({ preventScroll: true });
@@ -394,51 +513,49 @@ document.addEventListener('click', event => {
   if (!navigation.contains(event.target) && !menuToggle.contains(event.target)) setMenu(false);
 });
 
-// Keep seeking and full-screen viewing independent of playback.
-const playbar = document.querySelector('#playbar-template');
-document.querySelectorAll('.clip-player').forEach(player => {
-  player.append(playbar.content.cloneNode(true));
-  const seek = player.querySelector('.play-seek');
-  const clock = player.querySelector('.play-clock');
-  const expand = player.querySelector('.expand-video');
-
-  function showTime() {
-    const time = filmTime();
-    seek.disabled = false;
-    seek.max = filmDuration - .04;
-    seek.value = time;
-    const seconds = Math.floor(time);
-    clock.value = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
-    seek.setAttribute('aria-valuetext', clock.value);
+playToggle.addEventListener('click', () => {
+  if (retryPlayback || !filmPlaying) {
+    seekFilm(filmTime(), true, retryPlayback);
+    return;
   }
-  films.forEach(track => {
-    track.addEventListener('loadedmetadata', () => { if (track === film) showTime(); });
-    track.addEventListener('timeupdate', () => { if (track === film) showTime(); });
-  });
-  showTime();
-  seek.addEventListener('input', () => seekFilm(Number(seek.value)));
+  filmPlaying = false;
+  film.pause();
+  clearFilmWait();
+  showFilmStatus();
+});
+seek.disabled = false;
+seek.max = filmDuration - .04;
+showTime();
+// Update the slider immediately, but request the new byte range only once per drag.
+seek.addEventListener('input', () => {
+  scrubbing = true;
+  updateSeekPreview();
+});
+seek.addEventListener('change', () => {
+  scrubbing = false;
+  seekFilm(Number(seek.value));
+});
 
-  function updateExpandLabel() {
-    const expanded = document.fullscreenElement === player || player.classList.contains('expanded');
-    expand.title = expanded ? 'Exit full screen' : 'Full screen';
-    expand.setAttribute('aria-label', expand.title);
+function updateExpandLabel() {
+  const expanded = document.fullscreenElement === player || player.classList.contains('expanded');
+  expand.title = expanded ? 'Exit full screen' : 'Full screen';
+  expand.setAttribute('aria-label', expand.title);
+}
+expand.addEventListener('click', async () => {
+  if (document.fullscreenElement === player) await document.exitFullscreen();
+  else if (player.classList.contains('expanded')) player.classList.remove('expanded');
+  else {
+    try { await player.requestFullscreen(); }
+    catch { player.classList.add('expanded'); }
   }
-  expand.addEventListener('click', async () => {
-    if (document.fullscreenElement === player) await document.exitFullscreen();
-    else if (player.classList.contains('expanded')) player.classList.remove('expanded');
-    else {
-      try { await player.requestFullscreen(); }
-      catch { player.classList.add('expanded'); }
-    }
+  updateExpandLabel();
+});
+document.addEventListener('fullscreenchange', updateExpandLabel);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && player.classList.contains('expanded')) {
+    event.preventDefault();
+    player.classList.remove('expanded');
     updateExpandLabel();
-  });
-  document.addEventListener('fullscreenchange', updateExpandLabel);
-  document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && player.classList.contains('expanded')) {
-      event.preventDefault();
-      player.classList.remove('expanded');
-      updateExpandLabel();
-      expand.focus();
-    }
-  });
+    expand.focus();
+  }
 });

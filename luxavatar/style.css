@@ -336,6 +336,15 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
 .proxy-inputs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(6px,1vw,16px); align-content:center; }
 .proxy-inputs img { width:100%; aspect-ratio:1; border-radius:3px; }
 .proxy-inputs figcaption { color:#565951; }
+@media (min-width:761px) and (max-height:1200px) {
+  #training-proxy {
+    /* Size the two-row comparison by the space below the sticky header. */
+    max-width:calc(max(42rem, 150svh - 20rem) + 2 * var(--edge));
+    padding-block-start:clamp(2rem,6svh,3.5rem);
+  }
+  #training-proxy .proxy-heading { margin-bottom:20px; }
+  #proxy-title { font-size:clamp(2.375rem,6svh,4rem); }
+}
 .ablations-section #hybrid-data { padding-top:0; }
 .ablations-section #hybrid-data .study-heading { display:block; border-top:1px solid var(--rule); padding-top:clamp(32px,3.6vw,58px); }
 .ablations-section #data-title { font-size:clamp(2.6rem,4vw,4.25rem); }

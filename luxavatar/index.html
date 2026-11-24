@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101112">
+  <meta name="description" content="Explore LuxAvatar, a feed-forward framework for real-time animation and relighting of head avatars from a single portrait.">
+  <meta property="og:title" content="LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies">
+  <meta property="og:image" content="media/film/gallery.jpg">
+  <meta property="og:image:alt" content="Six animated head avatars extracted from the LuxAvatar research film">
+  <title>LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</title>
+  <link rel="icon" href="media/mark.png">
+  <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#project">Skip to project overview</a>
+  <section class="opening" id="opening" aria-labelledby="project-name">
+    <div class="opening-screen">
+      <div class="opening-panels opening-layout" role="img" aria-label="A head avatar animated under six target illumination conditions">
+        <div class="opening-panel" data-x="1" data-width="286">
+          <img src="media/opening/boxing.jpg?cut=358-613" alt="" width="286" height="506">
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <div class="opening-panel" data-x="294" data-width="285">
+          <img src="media/opening/kiara.jpg?cut=358-613" alt="" width="285" height="506">
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <div class="opening-panel" data-x="586" data-width="285">
+          <img src="media/opening/sun.jpg?cut=358-613" alt="" width="285" height="506">
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <div class="opening-panel" data-x="878" data-width="457">
+          <img src="media/opening/wooden.jpg?cut=358-613" alt="" width="457" height="506">
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <div class="opening-panel" data-x="1340" data-width="286">
+          <img src="media/opening/magenta.jpg?cut=358-613" alt="" width="286" height="506">
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <div class="opening-panel" data-x="1633" data-width="286">
+          <img src="media/opening/sunrise.jpg?cut=358-613" alt="" width="286" height="506">
+          <canvas aria-hidden="true"></canvas>
+        </div>
+      </div>
+      <video class="frame-source" id="opening-film" autoplay loop muted playsinline preload="auto" aria-hidden="true" tabindex="-1" src="media/opening/six-lights.mp4?cut=358-613"></video>
+      <div class="opening-probes opening-layout" role="group" aria-label="Target illumination for each head avatar, shown by a mirror sphere on the left and a diffuse sphere on the right">
+        <img src="media/opening/boxing-probes.png" alt="Boxing Ring mirror and diffuse spheres" title="Boxing Ring" width="223" height="104">
+        <img src="media/opening/kiara-probes.png" alt="Kiara Interior mirror and diffuse spheres" title="Kiara Interior" width="223" height="104">
+        <img src="media/opening/sun-probes.png" alt="Sunny Vondelpark mirror and diffuse spheres" title="Sunny Vondelpark" width="223" height="104">
+        <img src="media/opening/wooden-probes.png" alt="Wooden Studio mirror and diffuse spheres" title="Wooden Studio" width="223" height="104">
+        <img src="media/opening/magenta-probes.png" alt="Magenta / White mirror and diffuse spheres" title="Magenta / White" width="223" height="104">
+        <img src="media/opening/sunrise-probes.png" alt="Pink Sunrise mirror and diffuse spheres" title="Pink Sunrise" width="223" height="104">
+      </div>
+      <div class="opening-shade" aria-hidden="true"></div>
+      <div class="opening-intro" id="project">
+        <div class="shell">
+          <h1 id="project-name">Lux<i>Avatar</i></h1>
+          <p class="hero-sub">Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</p>
+          <div class="byline" aria-label="Paper authors">
+            <a href="../index.html">Yipengjing Sun<sup>1</sup></a>
+            <a href="https://wangchenyang.cn/" target="_blank" rel="noopener">Chenyang Wang<sup>1</sup></a>
+            <a href="https://yaourtb.github.io/" target="_blank" rel="noopener">Boyao Zhou<sup>2</sup></a>
+            <a href="https://github.com/zhujiapeng" target="_blank" rel="noopener">Jiapeng Zhu<sup>3</sup></a>
+            <a href="https://felixcheng97.github.io/" target="_blank" rel="noopener">Ka Leong Cheng<sup>3</sup></a>
+            <a href="https://homepage.hit.edu.cn/zhangshengping" target="_blank" rel="noopener">Shengping Zhang<sup>1</sup></a>
+          </div>
+          <p class="affiliations" aria-label="Author affiliations" tabindex="0"><span><sup>1</sup> Harbin Institute of Technology</span><span><sup>2</sup> Tsinghua University</span><span><sup>3</sup> The Hong Kong University of Science and Technology</span></p>
+          <div class="intro-actions">
+            <a class="watch" data-film="0" href="media/film/luxavatar-01.mp4"><span class="play-triangle" aria-hidden="true"></span>Watch demo<span class="watch-time">02:51</span></a>
+            <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <header class="site-head">
+    <div class="head-inner shell">
+      <a class="brand" href="#opening" aria-label="LuxAvatar home"><img src="media/mark.png" alt="" width="34" height="34"><span>Lux<i>Avatar</i></span></a>
+      <button class="menu-toggle" aria-controls="main-nav" aria-label="Open navigation" aria-expanded="false"><span aria-hidden="true"></span></button>
+      <nav id="main-nav" aria-label="Main navigation"><a href="#method">Method</a><a href="#gallery">Gallery</a><a href="#free-view">3D control</a><a href="#ablations">Ablations</a></nav>
+      <button class="paper-link" type="button" disabled><span class="page-icon" aria-hidden="true"></span><span>Read paper <small>(coming soon)</small></span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="method light-section" id="method" aria-labelledby="method-title">
+      <div class="shell">
+        <div class="section-head"><div><div class="eyebrow dark-label">Method</div><h2 id="method-title">Animate and relight <i>a single portrait</i></h2></div></div>
+        <div class="method-layout">
+          <div class="pipeline">
+            <div class="method-step"><h3>3D Intrinsic Gaussian Head Proxy</h3><p>From a single reference portrait, our feed-forward network reconstructs a 3D intrinsic Gaussian head proxy in canonical space. Driving FLAME parameters deform the Gaussians, which are rasterized into per-frame PBR buffers for the target&nbsp;camera.</p></div>
+            <div class="method-step"><h3>Two-Step Causal Neural Shader</h3><p>Conditioned on the PBR buffers, reference portrait and target illumination, the causal autoregressive neural shader generates relit video in two denoising steps per chunk.</p></div>
+          </div>
+          <div class="method-demo" role="group" aria-label="From reference portrait and driving motion to a relit head avatar">
+            <div class="method-inputs" role="group" aria-label="Reference and driving motion">
+              <figure>
+                <img width="512" height="512" src="media/method/reference.png" alt="Reference portrait used to reconstruct and shade the head avatar">
+                <figcaption>Reference portrait</figcaption>
+              </figure>
+              <div class="method-motion" role="group" aria-label="Driving video and its tracked motion">
+                <figure>
+                  <video playsinline muted loop preload="none" poster="media/method/driver.jpg" src="media/method/driver.mp4" aria-label="Driving video"></video>
+                  <figcaption>Driving video</figcaption>
+                </figure>
+                <figure>
+                  <video playsinline muted loop preload="none" poster="media/method/mesh.jpg" src="media/method/mesh.mp4" aria-label="Tracked FLAME mesh for the same driving frame"></video>
+                  <figcaption>Tracked FLAME</figcaption>
+                </figure>
+              </div>
+            </div>
+            <div class="buffers" role="group" aria-label="Animated PBR buffers, target illumination and relit avatar">
+              <figure class="buffer-panel">
+                <video playsinline muted loop preload="none" poster="media/method/normal.jpg" src="media/method/normal.mp4" aria-label="Normal map"></video>
+                <figcaption>Normal map</figcaption>
+              </figure>
+              <figure class="buffer-panel">
+                <video playsinline muted loop preload="none" poster="media/method/basecolor.jpg" src="media/method/basecolor.mp4" aria-label="Base color"></video>
+                <figcaption>Base color</figcaption>
+              </figure>
+              <figure class="buffer-panel">
+                <video playsinline muted loop preload="none" poster="media/method/roughness.jpg" src="media/method/roughness.mp4" aria-label="Roughness"></video>
+                <figcaption>Roughness</figcaption>
+              </figure>
+              <figure class="buffer-light">
+                <div><img src="media/method/wooden-specular.png" alt="Wooden Studio mirror sphere"><img src="media/method/wooden-diffuse.png" alt="Wooden Studio diffuse sphere"></div>
+                <figcaption>Target illumination</figcaption>
+              </figure>
+              <figure class="buffer-panel avatar-panel">
+                <video playsinline muted loop preload="none" poster="media/method/relit.jpg" src="media/method/relit.mp4" aria-label="Relit avatar"></video>
+                <figcaption>Relit avatar</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wall-section" id="gallery" aria-labelledby="wall-title">
+      <div class="shell wall-layout">
+        <div class="wall-copy">
+          <div class="eyebrow gold"><span class="spectrum" aria-hidden="true"></span>Identity gallery</div>
+          <h2 id="wall-title"><span>One take</span> <i>Full cast</i></h2>
+          <p>Each head avatar is reconstructed from a single reference portrait. The same driving motion animates the entire cast.</p>
+
+        </div>
+        <div class="wall-screen" role="img" aria-label="A growing cast of head avatars performing the same motion">
+          <div class="cast-grid"></div>
+          <video class="frame-source" id="wall-film" playsinline muted loop preload="none" aria-hidden="true" src="media/gallery/portraits.mp4"></video>
+        </div>
+      </div>
+    </section>
+
+    <section class="studies light-section" id="studies" aria-label="Qualitative results">
+      <div class="shell">
+        <section class="native-study" id="free-view" aria-labelledby="free-view-title">
+          <div class="view-demo native-player">
+            <div class="view-layout">
+              <div class="view-context">
+                <header class="view-heading section-head">
+                  <div class="eyebrow dark-label">Qualitative results</div>
+                  <h2 id="free-view-title">3D <i>control</i></h2>
+                  <p>The camera follows the same path around nine animated head avatars under two lighting conditions.</p>
+                </header>
+                <div class="view-tools">
+                  <div class="view-inputs">
+                    <figure><div class="native-tile" data-slot="9"><img loading="lazy" src="media/viewpoint/driver.jpg" alt="Driving performance"><canvas aria-hidden="true"></canvas></div><figcaption>Driving video</figcaption></figure>
+                    <figure><div class="env-window"><img class="view-env" src="media/viewpoint/R05.jpg" alt="Target environment map"></div><figcaption>Environment light</figcaption></figure>
+                  </div>
+                  <figure class="trajectory">
+                    <div class="trajectory-plot" role="img" aria-label="A camera follows a figure-eight path around the head. Its viewing direction and recent path are highlighted.">
+                      <img loading="lazy" width="650" height="340" src="media/viewpoint/trajectory-poster.png" alt="">
+                      <canvas width="1300" height="680" aria-hidden="true"></canvas>
+                    </div>
+                    <figcaption>Camera trajectory</figcaption>
+                  </figure>
+                </div>
+              </div>
+              <div class="view-grid" role="group" aria-label="Synchronized viewpoints">
+                <div class="native-tile" data-slot="0"><img loading="lazy" src="media/viewpoint/portrait-0.jpg" alt="Animated head avatar N418"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="1"><img loading="lazy" src="media/viewpoint/portrait-1.jpg" alt="Animated head avatar N262"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="2"><img loading="lazy" src="media/viewpoint/portrait-2.jpg" alt="Animated head avatar N254"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="3"><img loading="lazy" src="media/viewpoint/portrait-3.jpg" alt="Animated head avatar N310"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="4"><img loading="lazy" src="media/viewpoint/portrait-4.jpg" alt="Animated head avatar N223"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="5"><img loading="lazy" src="media/viewpoint/portrait-5.jpg" alt="Animated head avatar N147"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="6"><img loading="lazy" src="media/viewpoint/portrait-6.jpg" alt="Animated head avatar N201"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="7"><img loading="lazy" src="media/viewpoint/portrait-7.jpg" alt="Animated head avatar N289"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="8"><img loading="lazy" src="media/viewpoint/portrait-8.jpg" alt="Animated head avatar N380"><canvas aria-hidden="true"></canvas></div>
+              </div>
+            </div>
+            <video id="view-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" src="media/viewpoint/portraits.mp4"></video>
+          </div>
+        </section>
+      </div>
+    </section>
+    <section class="studies light-section ablations-section" id="ablations" aria-label="Ablations">
+      <section class="shell" id="training-proxy" aria-labelledby="proxy-title">
+        <header class="section-head proxy-heading">
+          <div class="eyebrow dark-label">Ablations</div>
+          <h2 id="proxy-title">Training strategy and intrinsic proxy</h2>
+        </header>
+        <div class="proxy-key" aria-label="Detail annotations">
+          <span>Iris sharpness</span><span>Cast shadow</span>
+        </div>
+        <div class="data-grid proxy-grid native-player" id="proxy-results">
+          <div class="proxy-inputs">
+            <figure><img loading="lazy" src="media/training-proxy/reference.png" alt=""><figcaption>Reference portrait</figcaption></figure>
+            <figure><img loading="lazy" src="media/training-proxy/target-light.png" alt=""><figcaption>Target lighting</figcaption></figure>
+          </div>
+          <figure>
+            <div class="native-tile" data-slot="0"><img loading="lazy" src="media/training-proxy/portrait-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption>DMD-only</figcaption>
+          </figure>
+          <figure>
+            <div class="native-tile" data-slot="1"><img loading="lazy" src="media/training-proxy/portrait-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption>Direct SF</figcaption>
+          </figure>
+          <figure>
+            <div class="native-tile" data-slot="2"><img loading="lazy" src="media/training-proxy/portrait-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption>GS-RGB</figcaption>
+          </figure>
+          <figure>
+            <div class="native-tile" data-slot="3"><img loading="lazy" src="media/training-proxy/portrait-3.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption>GS-N</figcaption>
+          </figure>
+          <figure>
+            <div class="native-tile" data-slot="4"><img loading="lazy" src="media/training-proxy/portrait-4.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption>FLAME-N</figcaption>
+          </figure>
+          <figure>
+            <div class="native-tile" data-slot="5"><img loading="lazy" src="media/training-proxy/portrait-5.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption class="data-full">Ours</figcaption>
+          </figure>
+          <figure>
+            <div class="native-tile" data-slot="6"><img loading="lazy" src="media/training-proxy/portrait-6.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <figcaption>Ground truth</figcaption>
+          </figure>
+          <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" src="media/training-proxy/portraits.mp4"></video>
+        </div>
+      </section>
+      <section class="shell data-study" id="hybrid-data" aria-labelledby="data-title">
+        <header class="study-heading section-head">
+          <h2 id="data-title">Hybrid training data</h2>
+        </header>
+          <div class="data-row">
+            <h3>Fixed illumination</h3>
+            <div class="data-grid native-player" id="data-fixed">
+              <figure>
+                <div class="native-tile" data-slot="0"><img loading="lazy" src="media/hybrid/fixed-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption>w/o Reverse Pairs</figcaption>
+              </figure>
+              <figure>
+                <div class="native-tile" data-slot="1"><img loading="lazy" src="media/hybrid/fixed-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption>w/o Synthesized Relit Videos</figcaption>
+              </figure>
+              <figure>
+                <div class="native-tile" data-slot="2"><img loading="lazy" src="media/hybrid/fixed-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption>w/o OLAT</figcaption>
+              </figure>
+              <figure>
+                <div class="native-tile" data-slot="3"><img loading="lazy" src="media/hybrid/fixed-3.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption class="data-full">Full model</figcaption>
+              </figure>
+              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" src="media/hybrid/fixed.mp4"></video>
+            </div>
+          </div>
+          <div class="data-row">
+            <h3>Rotating illumination</h3>
+            <div class="data-grid native-player" id="data-rotating">
+              <figure class="data-input"><img class="data-reference" loading="lazy" src="media/hybrid/reference.jpg" alt=""><figcaption>Reference portrait</figcaption></figure>
+              <figure class="data-input data-probe">
+                <div class="native-tile" data-slot="2"><img loading="lazy" src="media/hybrid/rotating-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption>Target lighting</figcaption>
+              </figure>
+              <figure>
+                <div class="native-tile" data-slot="0"><img loading="lazy" src="media/hybrid/rotating-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption>w/o OLAT</figcaption>
+              </figure>
+              <figure>
+                <div class="native-tile" data-slot="1"><img loading="lazy" src="media/hybrid/rotating-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <figcaption class="data-full">Full model</figcaption>
+              </figure>
+              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" src="media/hybrid/rotating.mp4"></video>
+            </div>
+          </div>
+      </section>
+      <section class="shell" id="streaming" aria-labelledby="streaming-title">
+        <header class="study-heading section-head">
+          <h2 id="streaming-title">Long-sequence stability</h2>
+          <p>Each lighting condition uses a single 984-frame streaming inference run. <strong class="stream-speed">3× speed</strong></p>
+        </header>
+        <div class="stream-demo native-player">
+          <div class="stream-group">
+            <h3>Reference portrait</h3>
+            <img class="stream-ref" loading="lazy" src="media/streaming/reference.jpg" alt="Input portrait for both relit avatars">
+          </div>
+          <div class="stream-group">
+            <h3>Driving video</h3>
+            <div class="native-tile" data-slot="0"><img loading="lazy" src="media/streaming/driver.jpg" alt="Driving performance"><canvas aria-hidden="true"></canvas></div>
+          </div>
+          <div class="stream-group stream-results" role="group" aria-labelledby="stream-results-title">
+            <h3 id="stream-results-title">Relit avatars</h3>
+            <div class="stream-pair">
+              <figure>
+                <div class="native-tile" data-slot="1"><img loading="lazy" src="media/streaming/C05-driver_light.jpg" alt="Estimated driving-scene lighting"><canvas aria-hidden="true"></canvas></div>
+                <figcaption><span>Estimated driving-scene lighting</span><img class="stream-condition" loading="lazy" src="media/streaming/scene.jpg" alt="Estimated environment map"></figcaption>
+              </figure>
+              <figure>
+                <div class="native-tile" data-slot="2"><img loading="lazy" src="media/streaming/C05-pylons.jpg" alt="Pylons"><canvas aria-hidden="true"></canvas></div>
+                <figcaption><span>Pylons</span><img class="stream-condition" loading="lazy" src="media/streaming/pylons.jpg" alt="Pylons environment map"></figcaption>
+              </figure>
+            </div>
+          </div>
+          <video id="stream-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" src="media/streaming/sequence-16fps.mp4"></video>
+        </div>
+      </section>
+    </section>
+  </main>
+  <footer class="site-foot" id="citation" aria-labelledby="citation-title">
+    <div class="shell citation-inner">
+      <h2 id="citation-title"><i>Citation</i></h2>
+      <p>BibTeX <span>(coming soon)</span></p>
+    </div>
+  </footer>
+  <dialog id="screening" aria-labelledby="screening-title">
+    <div class="screen-head"><div><div class="eyebrow gold">LuxAvatar</div><h2 id="screening-title">Research film</h2></div><button class="close" id="close-film" aria-label="Close film" autofocus>×</button></div>
+    <div class="clip-player">
+      <div class="film-frames" data-split="85.92" data-duration="170.96">
+        <video class="film-track is-current" playsinline muted preload="none" data-src="media/film/luxavatar-01.mp4" poster="media/film/poster.jpg" aria-label="LuxAvatar research film, with on-screen explanations"></video>
+        <video class="film-track" playsinline muted preload="none" data-src="media/film/luxavatar-02.mp4" aria-label="LuxAvatar research film, with on-screen explanations" aria-hidden="true"></video>
+      </div>
+    </div>
+    <div class="chapters" role="group" aria-label="Film chapters">
+      <button data-chapter="4.88">3D Intrinsic Gaussian Head Proxy</button><button data-chapter="12.48">Two-Step Causal Neural Shader</button><button data-chapter="18.12">Variations in illumination</button><button data-chapter="25.16">Gallery</button><button data-chapter="45.32">3D control</button><button data-chapter="63.36">Environment-map relighting</button><button data-chapter="101">Background harmonization</button><button data-chapter="116.56" aria-controls="ablation-chapters">Ablations</button>
+      <div id="ablation-chapters" class="subchapters" role="group" aria-label="Ablation chapters" hidden><span>Ablations</span><button data-subchapter="116.56">Training strategy and intrinsic proxy</button><button data-subchapter="125.92">Hybrid training data</button><button data-subchapter="144.28">Long-sequence stability</button></div>
+    </div>
+  </dialog>
+  <template id="playbar-template">
+    <div class="playbar">
+      <output class="play-clock" aria-live="off">0:00</output>
+      <input type="range" class="play-seek" min="0" max="1" step="0.04" value="0" aria-label="Seek video" disabled>
+      <button type="button" class="expand-video" aria-label="Full screen" title="Full screen"><span aria-hidden="true">⛶</span></button>
+    </div>
+  </template>
+</body>
+</html>

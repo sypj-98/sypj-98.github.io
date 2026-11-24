@@ -415,6 +415,11 @@ ul.wy-research-list > li.wy-pub-entry:last-child {
   object-fit: cover;
 }
 
+.wy-pub-thumb--contain video {
+  object-fit: contain;
+  background: #000;
+}
+
 .wy-pub-main {
   min-width: 0;
 }

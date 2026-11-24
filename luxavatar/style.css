@@ -171,15 +171,20 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
 .wall-copy p{color:#c2c2bd;line-height:1.55;max-width:360px}
 .wall-screen{position:relative;justify-self:center;width:min(100%,1032px);aspect-ratio:1;overflow:hidden;background:#0b0b0b}
 .cast-grid { --columns:3; position:absolute; inset:0; }
+.cast-shade {
+  position:absolute; z-index:1; inset:0; pointer-events:none;
+  box-shadow:0 0 0 100vmax #0b0b0b; opacity:0;
+}
 .cast-grid::after {
   content:""; position:absolute; inset:0; pointer-events:none;
-  --gutter:#0b0b0b 1.5px,transparent 1.5px calc(100% - 1.5px),#0b0b0b calc(100% - 1.5px);
+  --half-gap:var(--cast-half-gap,1.5px);
+  --gutter:#0b0b0b var(--half-gap),transparent var(--half-gap) calc(100% - var(--half-gap)),#0b0b0b calc(100% - var(--half-gap));
   background-image:linear-gradient(to right,var(--gutter)),linear-gradient(to bottom,var(--gutter));
   background-size:calc(100% / var(--columns)) 100%,100% calc(100% / var(--columns));
 }
-.cast-poster,#wall-film,.native-tile img,.native-tile canvas { display:block; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-#wall-film,.native-tile canvas { opacity:0; }
-.wall-screen.frame-ready #wall-film,.frame-ready .native-tile canvas { opacity:1; }
+.cast-poster,.cast-frame,.native-tile img,.native-tile canvas { display:block; position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.cast-frame,.native-tile canvas { opacity:0; }
+.wall-screen.frame-ready .cast-frame,.frame-ready .native-tile canvas { opacity:1; }
 @media(max-width:900px){
   :root{--header-height:62px}
   .head-inner nav{display:none}

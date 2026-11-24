@@ -6,7 +6,8 @@ const previewToggles = document.querySelectorAll('.preview-toggle');
 let activePreview = null;
 let warmPreview = null;
 const previewViews = new Map();
-let previewsEnabled = !reducedMotion.matches;
+let prefersReducedMotion = reducedMotion.matches;
+let previewsEnabled = !prefersReducedMotion;
 let pendingVisibilityCheck = 0;
 let lastScrollY = window.scrollY;
 let direction = 1;
@@ -182,7 +183,10 @@ function setPreviewsEnabled(enabled) {
   syncVisibleLoops();
 }
 previewToggles.forEach(button => button.addEventListener('click', () => setPreviewsEnabled(!previewsEnabled)));
-const updateMotion = event => setPreviewsEnabled(!event.matches);
+const updateMotion = event => {
+  prefersReducedMotion = event.matches;
+  setPreviewsEnabled(!prefersReducedMotion);
+};
 if (reducedMotion.addEventListener) reducedMotion.addEventListener('change', updateMotion);
 else reducedMotion.addListener(updateMotion);
 setPreviewsEnabled(previewsEnabled);
@@ -446,23 +450,121 @@ function connectTiles(view, columns, size, update, restartOnExit = false) {
 const castView = document.querySelector('.wall-screen');
 const castGrid = castView.querySelector('.cast-grid');
 const castClock = document.querySelector('#wall-film');
-let castColumns = 3;
+const castCover = document.querySelector('#cast-cover');
+const castShade = castGrid.querySelector('.cast-shade');
+const castStill = document.querySelector('#cast-still');
+let coverTimeout;
+function showCastStill() {
+  clearTimeout(coverTimeout);
+  if (!castStill.isConnected) return;
+  // Reuse the same lossless picture that a browser with scripting disabled displays.
+  castStill.insertAdjacentHTML('beforebegin', castStill.textContent);
+  castStill.remove();
+}
+function loadCastCover() {
+  if (!previewsEnabled || !castCover.canPlayType('video/mp4')) return showCastStill();
+  // One original H.264 keyframe is sufficient for a sharp, stationary poster.
+  castCover.preload = 'auto';
+  castCover.src = castCover.dataset.coverSrc;
+  // Keep the keyframe request alive if the static fallback has to race it on a slow connection.
+  coverTimeout = setTimeout(() => {
+    if (castCover.readyState < 2 && !castView.classList.contains('frame-ready')) showCastStill();
+  }, 2500);
+}
+castCover.addEventListener('loadeddata', () => clearTimeout(coverTimeout), { once:true });
+castCover.addEventListener('error', showCastStill, { once:true });
+if ('IntersectionObserver' in window) {
+  const coverObserver = new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting) return;
+    coverObserver.disconnect();
+    loadCastCover();
+  }, { rootMargin:'900px 0px' });
+  coverObserver.observe(castView);
+} else loadCastCover();
+
+// Only expose frames copied to this canvas: a native video can advance one paint ahead of its grid.
+const castCanvas = castGrid.querySelector('.cast-frame');
+const castContext = castCanvas.getContext('2d', { alpha:false });
+const castCuts = [{ frame:114, from:3, to:5 }, { frame:297, from:5, to:7 }];
+const castFps = 25;
+let castFrame = -1;
+let growingAfterLoop = false;
+let castTween = 0;
+
+function easeCast(value) {
+  const t = Math.max(0, Math.min(1, value));
+  return t * t * (3 - 2 * t);
+}
+
+function layoutCast() {
+  cancelAnimationFrame(castTween);
+  if (castFrame < 0) return;
+  const columns = castFrame < castCuts[0].frame ? 3 : castFrame < castCuts[1].frame ? 5 : 7;
+  const length = Math.round(castClock.duration * castFps);
+  // Interpolate within the displayed sample. Only a decoded frame can advance the grid to its next density.
+  const position = Math.max(castFrame, Math.min(castFrame + 1, castClock.currentTime * castFps));
+  let scale = 1;
+  let shade = 0;
+  let inset = 0;
+  if (!prefersReducedMotion) {
+    for (const cut of castCuts) {
+      const offset = position - cut.frame;
+      const ratio = cut.from / cut.to;
+      if (columns === cut.from && offset >= -18) scale = 1 - (1 - ratio) * easeCast((offset + 18) / 18);
+      if (columns === cut.to && offset >= 0 && offset < 9) {
+        inset = (1 - ratio) * 50;
+        shade = 1 - easeCast(offset / 9);
+      }
+    }
+    if (columns === 7 && position >= length - 10) {
+      inset = (1 - 3 / 7) * 50;
+      shade = easeCast((position - length + 10) / 9);
+    } else if (growingAfterLoop) {
+      scale = 3 / 7 + (1 - 3 / 7) * easeCast(position / 18);
+    }
+  }
+  castGrid.style.setProperty('--columns', columns);
+  castGrid.style.setProperty('--cast-half-gap', 1.5 / scale + 'px');
+  castGrid.style.transform = scale === 1 ? '' : 'scale(' + scale + ')';
+  castShade.style.inset = inset + '%';
+  castShade.style.opacity = shade;
+  if ((scale < 1 || shade > 0) && !castClock.paused && activePreview === castClock && !document.hidden) {
+    castTween = requestAnimationFrame(layoutCast);
+  }
+}
+
+function drawCast(time) {
+  const frame = Math.floor(time * castFps + .0001);
+  const length = Math.round(castClock.duration * castFps);
+  if (frame < 18 && castFrame >= length - 10) growingAfterLoop = true;
+  if (frame >= 18) growingAfterLoop = false;
+  castFrame = frame;
+  castContext.drawImage(castClock, 0, 0);
+  // The original loop cuts between lighting setups. Dissolve the central nine into the exact opening pose.
+  if (frame >= length - 10 && !prefersReducedMotion) {
+    const cover = castCover.readyState >= 2 ? castCover : castGrid.querySelector('img.cast-poster');
+    if (cover === castCover || cover?.naturalWidth) {
+      const tile = castCanvas.width / 7;
+      castContext.globalAlpha = easeCast((frame - length + 10) / 9);
+      castContext.drawImage(cover, tile * 2, tile * 2, tile * 3, tile * 3);
+      castContext.globalAlpha = 1;
+    }
+  }
+  layoutCast();
+}
 function resetCastPoster() {
-  castColumns = 3;
-  castGrid.style.removeProperty('--columns');
+  cancelAnimationFrame(castTween);
+  castFrame = -1;
+  growingAfterLoop = false;
+  castGrid.removeAttribute('style');
+  castShade.removeAttribute('style');
   castView.classList.remove('frame-ready');
 }
 castClock.addEventListener('emptied', resetCastPoster);
 castClock.addEventListener('error', resetCastPoster);
-observeFrames(castClock, castView, time => {
-  const frame = Math.round(time * 25);
-  const columns = frame < 114 ? 3 : frame < 297 ? 5 : 7;
-  if (columns !== castColumns) {
-    // The source already contains the expanded grid; scaling it would magnify the smaller faces.
-    castGrid.style.setProperty('--columns', columns);
-    castColumns = columns;
-  }
-});
+reducedMotion.addEventListener?.('change', layoutCast);
+if (castContext) observeFrames(castClock, castView, drawCast);
+else showCastStill();
 
 const viewDemo = document.querySelector('.view-demo');
 const trajectory = viewDemo.querySelector('.trajectory canvas');

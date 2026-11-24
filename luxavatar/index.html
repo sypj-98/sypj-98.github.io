@@ -11,8 +11,8 @@
   <title>LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</title>
   <link rel="icon" href="media/mark.png">
   <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=76f4e25564">
-  <script defer src="app.js?v=668adb06d2"></script>
+  <link rel="stylesheet" href="style.css?v=362eeedf4c">
+  <script defer src="app.js?v=94d5d2acef"></script>
 </head>
 <body>
   <a class="skip" href="#project">Skip to project overview</a>
@@ -158,11 +158,14 @@
         </div>
         <div class="wall-screen" role="img" aria-label="A growing cast of head avatars performing the same motion">
           <div class="cast-grid" aria-hidden="true">
-            <picture>
+            <video class="cast-poster" id="cast-cover" muted playsinline preload="none" data-cover-src="media/gallery/cast-cover.mp4#t=0.001"></video>
+            <noscript id="cast-still"><picture>
               <source type="image/webp" srcset="media/gallery/cast-first-frame.webp">
               <img class="cast-poster" loading="lazy" width="1260" height="1260" src="media/gallery/cast-first-frame.png" alt="">
-            </picture>
-            <video id="wall-film" playsinline muted loop preload="none" data-src="media/gallery/portraits.mp4"></video>
+            </picture></noscript>
+            <video id="wall-film" class="frame-source" playsinline muted loop preload="none" data-src="media/gallery/portraits.mp4"></video>
+            <canvas class="cast-frame" width="1260" height="1260"></canvas>
+            <span class="cast-shade"></span>
           </div>
         </div>
       </div>

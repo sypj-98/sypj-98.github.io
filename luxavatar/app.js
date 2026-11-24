@@ -638,16 +638,26 @@ fetch('media/viewpoint/trajectory.json').then(response => {
   viewDemo.querySelector('.trajectory-plot img').hidden = true;
 }).catch(() => { /* The first-pose image remains visible beneath the clear canvas. */ });
 const environmentPreview = viewDemo.querySelector('.view-light');
+const referenceCue = environmentPreview.querySelector('.view-reference');
+const viewClock = viewDemo.querySelector('#view-clock');
+const viewFps = 25;
+const firstOrbitFrame = 50;
+const secondOrbitFrame = 250;
+// The film introduces the reference portraits once. Subsequent laps alternate the two lit orbits.
+viewClock.addEventListener('ended', () => {
+  viewClock.currentTime = firstOrbitFrame / viewFps;
+  if (activePreview === viewClock) playPreview(viewClock);
+});
 connectTiles(viewDemo, 4, 384, time => {
-  const frame = Math.min(450, Math.round(time * 25));
-  const light = frame < 250 ? 'R05' : 'R06';
-  // The film holds the reference portraits, then fades in the first light and render together.
+  const frame = Math.min(450, Math.floor(time * viewFps + .0001));
+  const light = frame < secondOrbitFrame ? 'R05' : 'R06';
+  // Match the introduction and the hard lighting cut in the decoded portrait frame.
   const visibleLight = frame < 24 ? '' : light;
   if (environmentPreview.dataset.light !== visibleLight) environmentPreview.dataset.light = visibleLight;
   const fade = Math.max(0, Math.min(1, (frame - 23) / 23));
-  const opacity = String(fade * fade * (3 - 2 * fade));
-  if (environmentPreview.style.opacity !== opacity) environmentPreview.style.opacity = opacity;
-  drawTrajectory(frame < 250 ? Math.max(0, frame - 50) : frame - 250, light);
+  referenceCue.hidden = fade === 1;
+  environmentPreview.style.setProperty('--light-opacity', fade * fade * (3 - 2 * fade));
+  drawTrajectory(frame < secondOrbitFrame ? Math.max(0, frame - firstOrbitFrame) : frame - secondOrbitFrame, light);
 });
 const streamClock = document.querySelector('#stream-clock');
 const streamDemo = document.querySelector('.stream-demo');

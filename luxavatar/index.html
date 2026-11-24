@@ -11,8 +11,8 @@
   <title>LuxAvatar: Real-Time Relightable Head Avatars via Causal Neural Shading of 3D Intrinsic Proxies</title>
   <link rel="icon" href="media/mark.png">
   <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=362eeedf4c">
-  <script defer src="app.js?v=94d5d2acef"></script>
+  <link rel="stylesheet" href="style.css?v=76a7f2d24f">
+  <script defer src="app.js?v=8e521b80da"></script>
 </head>
 <body>
   <a class="skip" href="#project">Skip to project overview</a>
@@ -187,8 +187,9 @@
                     <figure><div class="native-tile" data-slot="9"><img loading="lazy" src="media/viewpoint/driver.jpg" alt="Driving performance"><canvas aria-hidden="true"></canvas></div><figcaption>Driving video</figcaption></figure>
                     <figure class="view-light" data-light="">
                       <div class="env-window">
-                        <img data-light="R05" loading="lazy" src="media/viewpoint/R05.jpg" alt="Warm indoor environment">
-                        <img data-light="R06" loading="lazy" src="media/viewpoint/R06.jpg" alt="Purple-lit indoor environment">
+                        <span class="view-reference">Reference portraits</span>
+                        <img data-light="R05" src="media/viewpoint/R05.jpg" alt="Warm indoor environment">
+                        <img data-light="R06" src="media/viewpoint/R06.jpg" alt="Purple-lit indoor environment">
                       </div>
                       <figcaption>Environment light</figcaption>
                     </figure>
@@ -214,7 +215,7 @@
                 <div class="native-tile" data-slot="8"><img loading="lazy" src="media/viewpoint/portrait-8.jpg" alt="Animated head avatar N380"><canvas aria-hidden="true"></canvas></div>
               </div>
             </div>
-            <video id="view-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/viewpoint/portraits.mp4"></video>
+            <video id="view-clock" class="frame-source" muted playsinline preload="none" aria-hidden="true" data-src="media/viewpoint/portraits.mp4"></video>
           </div>
         </section>
       </div>

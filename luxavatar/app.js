@@ -284,9 +284,24 @@ connectTiles(viewDemo, 4, 384, time => {
   drawTrajectory(frame < 250 ? Math.max(0, frame - 50) : frame - 250, light);
 });
 const streamClock = document.querySelector('#stream-clock');
+const streamDemo = document.querySelector('.stream-demo');
+// Keep a complete portrait visible while the full-resolution JPEG is arriving.
+const streamPosters = new IntersectionObserver(([entry], observer) => {
+  if (!entry.isIntersecting) return;
+  observer.disconnect();
+  for (const preview of streamDemo.querySelectorAll('img[data-full-src]')) {
+    const original = preview.cloneNode(false);
+    original.src = preview.dataset.fullSrc;
+    original.removeAttribute('data-full-src');
+    original.decode().then(() => preview.replaceWith(original)).catch(() => {
+      // The inline still also covers a failed poster request.
+    });
+  }
+}, { rootMargin: '400px 0px' });
+streamPosters.observe(streamDemo);
 streamClock.defaultPlaybackRate = 3;
 streamClock.playbackRate = 3;
-connectTiles(document.querySelector('.stream-demo'), 3, 480);
+connectTiles(streamDemo, 3, 480);
 connectTiles(document.querySelector('#proxy-results'), 4, 480);
 connectTiles(document.querySelector('#data-fixed'), 4, 480);
 connectTiles(document.querySelector('#data-rotating'), 3, 480);

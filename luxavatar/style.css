@@ -415,36 +415,110 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
   .head-inner .paper-link small { display:block; font-size:.72rem; }
 }
 
-/* Leave room for headings and captions when sizing desktop exhibits by height. */
-@media (min-width:761px) and (max-height:1200px) {
-  :root { --section-space:clamp(18px,4.5svh,56px); --compact-title:clamp(2.375rem,6svh,4rem); }
-  :is(.method,.studies) .shell,.wall-layout { padding-block:var(--section-space); }
-  .method .section-head,.study-heading { margin-bottom:clamp(16px,2.6svh,28px); }
-  :is(.method .section-head h2,#proxy-title,#data-title,#streaming-title) { font-size:var(--compact-title); }
-  .method-layout { gap:clamp(15px,3svh,36px); }
-  .method-demo {
-    --rail:clamp(60px,min(7.2vw,10svh),110px);
-    --rail-label:clamp(.7rem,1.6svh,.8rem);
-    width:min(100%,max(34rem,300svh - 87rem));
-    margin-inline:auto;
+/* One design pixel at the 2560 × 1440 reference viewport. Use the limiting
+   dimension on shorter or narrower desktops, with legible text on small screens. */
+@media (min-width:761px) and ((width < 2560px) or (height < 1440px)) {
+  :root {
+    --design-px:min(100vw / 2560,100svh / 1440,1px);
+    --edge:clamp(20px,calc(90 * var(--design-px)),90px);
+    --header-height:clamp(52px,calc(74 * var(--design-px)),74px);
   }
+  .shell { width:min(100%,max(44rem,calc(1650 * var(--design-px)))); }
+  /* Controls keep a minimum readable size when the exhibits become smaller. */
+  .brand { gap:calc(8 * var(--design-px)); font-size:clamp(1.1rem,calc(23.68 * var(--design-px)),1.48rem); }
+  .brand img { width:clamp(24px,calc(34 * var(--design-px)),34px); height:auto; }
+  nav { gap:calc(34 * var(--design-px)); }
+  nav a { font-size:clamp(.75rem,calc(14.4 * var(--design-px)),.9rem); }
+  .head-inner .paper-link,.intro-actions .paper-link,.intro-actions .watch {
+    font-size:clamp(.75rem,calc(14 * var(--design-px)),.875rem);
+    gap:max(6px,calc(10 * var(--design-px)));
+  }
+  .head-inner .paper-link { padding:calc(9 * var(--design-px)) calc(17 * var(--design-px)); }
+  .watch-time { font-size:clamp(.66rem,calc(12.16 * var(--design-px)),.76rem); padding-left:calc(11 * var(--design-px)); }
+  .eyebrow { font-size:clamp(.625rem,calc(12 * var(--design-px)),.75rem); }
+  .opening-layout { gap:clamp(2px,calc(5 * var(--design-px)),5px); }
+  .opening-probes img { max-width:calc(223 * var(--design-px)); }
+
+  .method .shell { padding-block:calc(84 * var(--design-px)); }
+  .studies .shell { padding-block:calc(98 * var(--design-px)); }
+  .method .section-head { margin-bottom:calc(30 * var(--design-px)); }
+  .section-head h2 { font-size:clamp(2.25rem,calc(92 * var(--design-px)),5.75rem); }
+  .method-layout { gap:calc(48 * var(--design-px)); }
+  .pipeline { gap:calc(100 * var(--design-px)); }
+  .method-step h3 { font-size:clamp(1rem,calc(21.12 * var(--design-px)),1.32rem); }
+  .method-step { padding-top:calc(17 * var(--design-px)); }
+  .method-step p { margin-top:calc(9 * var(--design-px)); }
+  .method-step p,.wall-copy p { font-size:clamp(.8125rem,calc(16 * var(--design-px)),1rem); }
+  .method-demo {
+    --rail:clamp(60px,calc(110 * var(--design-px)),110px);
+    --rail-label:clamp(.67rem,calc(12.8 * var(--design-px)),.8rem);
+    --rail-gap:calc(26 * var(--design-px));
+    --tile-gap:calc(18 * var(--design-px));
+    --intro-gap:calc(54 * var(--design-px));
+    padding-top:calc(24 * var(--design-px));
+  }
+  .method-demo::before { padding-bottom:calc(32 * var(--design-px)); }
+  .method-inputs { gap:calc(12 * var(--design-px)); }
+  .method-motion { gap:calc(8 * var(--design-px)); }
   .buffers { grid-template-columns:repeat(3,minmax(0,1fr)) minmax(3.5rem,.52fr) minmax(0,1fr); }
-  .wall-screen { width:min(100%,1032px,max(13rem,var(--viewport-content) - 2 * var(--section-space))); }
-  .wall-copy h2 { font-size:clamp(1.75rem,min(18.2cqi,10svh),6.8rem); }
-  .view-grid { width:min(100%,840px,max(13rem,var(--viewport-content) - 2.25rem)); }
-  .view-heading h2 { font-size:clamp(3rem,min(6.8vw,8svh),7.3rem); }
-  .view-heading p { margin-top:12px; }
-  .view-tools { max-width:clamp(14rem,40svh,400px); margin-top:clamp(14px,2.6svh,34px); }
-  :is(#training-proxy,#hybrid-data) { max-width:calc(max(36rem,150svh - 22rem) + 2 * var(--edge)); }
-  #hybrid-data { max-width:calc(max(34rem,150svh - 24rem) + 2 * var(--edge)); }
-  .proxy-heading { margin-bottom:clamp(14px,2.2svh,24px); }
-  .proxy-key,.data-row { padding-block:clamp(8px,1.7svh,20px); }
-  :is(#hybrid-data,#streaming) .study-heading { padding-top:var(--section-space); }
-  #streaming .study-heading { margin-bottom:clamp(16px,2.5svh,28px); }
-  .stream-demo { width:min(100%,max(34rem,350svh - 60rem)); margin-inline:auto; }
+  .wall-layout { gap:calc(72 * var(--design-px)); padding-block:calc(82 * var(--design-px)); }
+  .wall-screen { max-width:calc(1032 * var(--design-px)); }
+  .wall-copy p { max-width:max(24ch,calc(360 * var(--design-px))); }
+  .wall-copy h2 { margin-block:calc(26 * var(--design-px)) calc(20 * var(--design-px)); }
+  .studies { --gutter:calc(42 * var(--design-px)); }
+  .view-context { max-width:max(15rem,calc(440 * var(--design-px))); }
+  .view-heading h2 { font-size:clamp(2.5rem,calc(116.8 * var(--design-px)),7.3rem); }
+  .view-tools { max-width:max(13rem,calc(400 * var(--design-px))); margin-top:calc(44 * var(--design-px)); }
+  .view-grid { width:min(100%,calc(840 * var(--design-px))); gap:calc(6 * var(--design-px)); }
+  .studies .section-head p { font-size:clamp(.875rem,calc(18.88 * var(--design-px)),1.18rem); }
+  .study-heading { margin-bottom:calc(54 * var(--design-px)); }
+  .proxy-heading,#streaming .study-heading { margin-bottom:calc(36 * var(--design-px)); }
+  .studies .section-head .eyebrow { margin-bottom:calc(16 * var(--design-px)); }
+  .proxy-key { padding-block:calc(14 * var(--design-px)); font-size:clamp(.75rem,calc(14.08 * var(--design-px)),.88rem); }
+  .ablations-section #hybrid-data .study-heading,#streaming .study-heading { padding-top:calc(58 * var(--design-px)); }
+  .ablations-section #data-title,#streaming-title { font-size:clamp(1.8rem,calc(68 * var(--design-px)),4.25rem); }
+  .data-row { padding-block:calc(32 * var(--design-px)); }
+  .data-row h3 { font-size:clamp(.94rem,calc(23.2 * var(--design-px)),1.45rem); margin-bottom:calc(14 * var(--design-px)); }
+  .data-grid { gap:calc(20 * var(--design-px)); }
+  .stream-demo { --stream-gap:calc(20 * var(--design-px)); }
+  .stream-group h3 { font-size:clamp(.875rem,calc(17.6 * var(--design-px)),1.1rem); margin-bottom:calc(14 * var(--design-px)); padding-bottom:calc(9 * var(--design-px)); }
+  .stream-condition { width:max(28px,calc(54 * var(--design-px))); }
+  .stream-pair figcaption { padding-top:calc(10 * var(--design-px)); }
+  .native-player figcaption { font-size:clamp(.77rem,calc(16 * var(--design-px)),1rem); }
+  .citation-inner { padding-block:calc(76 * var(--design-px)); }
+  .citation-inner h2 { font-size:clamp(2.25rem,calc(78.4 * var(--design-px)),4.9rem); }
+  .citation-inner p { font-size:clamp(.75rem,calc(17.6 * var(--design-px)),1.1rem); }
+
+  #screening { width:min(calc(100% - 24px),max(34rem,calc(960 * var(--design-px)))); }
+  .screen-head { padding:calc(17 * var(--design-px)) calc(22 * var(--design-px)); }
+  .screen-head h2 { font-size:clamp(1rem,calc(24 * var(--design-px)),1.5rem); }
+  .close { width:max(30px,calc(38 * var(--design-px))); height:max(30px,calc(38 * var(--design-px))); }
+  .chapters { padding:calc(14 * var(--design-px)) calc(18 * var(--design-px)); gap:max(4px,calc(6 * var(--design-px))); }
+  .chapters button { font-size:clamp(.71rem,calc(13.36 * var(--design-px)),.835rem); padding:calc(6 * var(--design-px)) calc(11 * var(--design-px)); }
+  .playbar { gap:max(6px,calc(12 * var(--design-px))); }
+  .toggle-video,.expand-video { min-height:30px; height:max(30px,calc(36 * var(--design-px))); }
+}
+
+@media (min-width:761px) and (min-aspect-ratio:6/5) and (min-height:561px) and ((width < 2560px) or (height < 1440px)) {
+  .opening-intro { padding-top:min(24dvh,380px); }
+  .opening-intro h1 { font-size:clamp(3.5rem,calc(208 * var(--design-px)),13rem); }
+  .opening-intro .hero-sub { font-size:clamp(1.2rem,calc(48 * var(--design-px)),3rem); }
+  .byline {
+    font-size:clamp(.82rem,calc(19.36 * var(--design-px)),1.21rem);
+    column-gap:calc(27 * var(--design-px)); margin-top:calc(32 * var(--design-px));
+  }
+  .affiliations {
+    font-size:clamp(.78rem,calc(16.8 * var(--design-px)),1.05rem);
+    column-gap:calc(42 * var(--design-px)); margin-top:calc(19 * var(--design-px));
+  }
+  .intro-actions { gap:calc(12 * var(--design-px)); margin-top:calc(42 * var(--design-px)); }
+  .intro-actions .watch,.intro-actions .paper-link {
+    padding:clamp(8px,calc(13 * var(--design-px)),13px) clamp(12px,calc(19 * var(--design-px)),19px);
+  }
 }
 
 @media (min-width:761px) and (max-height:650px) {
+  .method .shell,#studies>.shell { width:min(100%,max(52rem,calc(1650 * var(--design-px)))); }
   .method-layout { grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr); align-items:start; }
   .pipeline { grid-template-columns:1fr; gap:16px; }
   .method-step { padding-top:12px; }
@@ -454,6 +528,7 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
 }
 
 @media (min-width:761px) and (max-height:560px) {
+  .view-context { max-width:none; }
   .view-tools { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end; gap:12px; max-width:none; }
   .view-tools .trajectory { margin-top:0; }
   .view-inputs { gap:8px; }

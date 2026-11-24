@@ -4,62 +4,129 @@ const screening = document.querySelector('#screening');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const previewToggles = document.querySelectorAll('.preview-toggle');
 let activePreview = null;
+let warmPreview = null;
 const previewViews = new Map();
 let previewsEnabled = !reducedMotion.matches;
 let pendingVisibilityCheck = 0;
+let lastScrollY = window.scrollY;
+let direction = 1;
+let navigationTarget = null;
 
 function releaseLoadingTrack(track) {
-  if (track.networkState !== HTMLMediaElement.NETWORK_LOADING) return;
+  if (!track.hasAttribute('src') || (track.networkState !== HTMLMediaElement.NETWORK_LOADING && track.readyState > 0)) return;
   if (track.readyState >= HTMLMediaElement.HAVE_METADATA) previewViews.get(track).resumeAt = track.currentTime;
   track.removeAttribute('src');
+  track.preload = 'none';
   track.load();
 }
 
+function attachPreview(video, coldStart = false) {
+  if (video.hasAttribute('src')) return;
+  const network = navigator.connection;
+  const slow = ['slow-2g', '2g', '3g'].includes(network?.effectiveType);
+  const limited = network?.saveData || slow || (network?.downlink > 0 && network.downlink < 4.5);
+  // The lighter files preserve the original pixel grid and timing. Safari exposes no link estimate.
+  const useLight = video.dataset.light && (coldStart || network?.saveData || !network?.downlink ||
+    network.downlink < Number(video.dataset.mbps) || slow);
+  if (video.dataset.low && (limited || previewViews.get(video).constrained)) video.src = video.dataset.low;
+  else video.src = useLight ? video.dataset.light : video.dataset.src;
+}
+
 function playPreview(video) {
-  if (!video.hasAttribute('src')) video.src = previewViews.get(video).source;
-  else if (video.error) video.load();
+  video.preload = 'auto';
+  attachPreview(video, true);
+  if (video.error) video.load();
   video.play().catch(error => {
     if (error.name === 'NotAllowedError' && activePreview === video) setPreviewsEnabled(false);
   });
 }
 
+function hasPlaybackBuffer(video) {
+  const { buffered, currentTime, duration, playbackRate } = video;
+  for (let i = 0; i < buffered.length; i++) {
+    if (buffered.start(i) <= currentTime + .05 && buffered.end(i) >= Math.min(duration - .05, currentTime + 2.5 * playbackRate)) return true;
+  }
+  return false;
+}
+
 function syncVisibleLoops() {
   let next = null;
-  let nearestCenter = Infinity;
+  let neighbor = null;
   const height = document.documentElement.clientHeight;
-  if (previewsEnabled && !document.hidden && !screening.open) {
+  const canPlay = previewsEnabled && !document.hidden && !screening.open;
+  if (Math.abs(window.scrollY - lastScrollY) > 12) {
+    direction = window.scrollY > lastScrollY ? 1 : -1;
+    lastScrollY = window.scrollY;
+  }
+  if (canPlay) {
+    let nearestCenter = Infinity;
+    const boxes = new Map();
     for (const [video, preview] of previewViews) {
       const box = preview.view.getBoundingClientRect();
+      if (!box.width || !box.height) continue;
+      boxes.set(video, box);
       const visible = Math.min(height, box.bottom) - Math.max(0, box.top);
       if (visible <= 0 && preview.restartOnExit) preview.rewind = true;
-      // Large mobile exhibits can fill the viewport without ever fitting inside it.
-      if (!box.width || visible < 0.4 * Math.min(height, box.height) || visible <= 0) continue;
-      const distance = Math.abs((box.top + box.bottom - height) / 2);
+      if (visible < Math.min(64, Math.min(height, box.height) * .15)) continue;
+      const distance = Math.max(0, box.top - height / 2, height / 2 - box.bottom);
       if (distance < nearestCenter) {
         nearestCenter = distance;
         next = video;
       }
     }
+    // Prepare just the next exhibit in reading order, once the on-screen one has frames.
+    if (!navigator.connection?.saveData) {
+      const current = boxes.get(next);
+      const edge = direction > 0 ? current?.bottom ?? 0 : current?.top ?? height;
+      let nearest = Infinity;
+      for (const [video, box] of boxes) {
+        const gap = direction > 0 ? box.top - edge : edge - box.bottom;
+        const ahead = direction > 0 ? box.top - height : -box.bottom;
+        if (video !== next && gap >= -1 && ahead < height * 2 && gap < nearest) {
+          nearest = gap;
+          neighbor = video;
+        }
+      }
+      if (neighbor !== warmPreview && next && next.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) neighbor = null;
+    }
+    // A chapter link can smoothly scroll past several videos before reaching its destination.
+    if (navigationTarget && next !== navigationTarget) {
+      next = null;
+      neighbor = navigator.connection?.saveData ? null : navigationTarget;
+    } else {
+      navigationTarget = null;
+    }
+  } else {
+    navigationTarget = null;
   }
 
-  if (activePreview === next) return;
-  if (activePreview) {
-    activePreview.pause();
-    // Keep a decoded frame visible on manual pause; cancel transfers when scrolling away.
-    if (previewsEnabled || activePreview.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-      releaseLoadingTrack(activePreview);
+  if (warmPreview && warmPreview !== neighbor && warmPreview !== next) releaseLoadingTrack(warmPreview);
+  warmPreview = neighbor;
+  if (activePreview !== next) {
+    if (activePreview) {
+      activePreview.pause();
+      if (activePreview !== neighbor && (previewsEnabled || activePreview.readyState < HTMLMediaElement.HAVE_CURRENT_DATA)) {
+        releaseLoadingTrack(activePreview);
+      }
+    }
+    activePreview = next;
+    if (next) {
+      const preview = previewViews.get(next);
+      preview.retried = false;
+      if (preview.rewind) {
+        preview.resumeAt = 0;
+        if (next.readyState >= HTMLMediaElement.HAVE_METADATA) next.currentTime = 0;
+        preview.rewind = false;
+      }
+      playPreview(next);
     }
   }
-  activePreview = next;
-  if (!next) return;
-  const preview = previewViews.get(next);
-  preview.retried = false;
-  if (preview.rewind) {
-    preview.resumeAt = 0;
-    if (next.readyState >= HTMLMediaElement.HAVE_METADATA) next.currentTime = 0;
-    preview.rewind = false;
+  if (neighbor) {
+    // WebKit may fetch the entire neighboring file with auto. Reserve bandwidth for the visible motion.
+    const preload = !next || hasPlaybackBuffer(next) ? 'auto' : 'metadata';
+    if (neighbor.preload !== preload) neighbor.preload = preload;
+    attachPreview(neighbor, neighbor === navigationTarget);
   }
-  playPreview(next);
 }
 
 function queueVisibilityCheck() {
@@ -70,19 +137,47 @@ function queueVisibilityCheck() {
 }
 const previewResize = window.ResizeObserver && new ResizeObserver(queueVisibilityCheck);
 function observeLoop(video, view = video, restartOnExit = false) {
-  const preview = { view, source: video.dataset.src, restartOnExit, rewind: false, resumeAt: 0, retried: false };
+  const preview = { view, restartOnExit, rewind: false, resumeAt: 0, retried: false, frames: 0 };
   previewViews.set(video, preview);
   video.addEventListener('loadedmetadata', () => {
-    if (activePreview === video && preview.resumeAt > 0 && preview.resumeAt < video.duration) {
+    if (!preview.rewind && preview.resumeAt > 0 && preview.resumeAt < video.duration) {
       video.currentTime = preview.resumeAt;
     }
     preview.resumeAt = 0;
   });
+  video.addEventListener('loadeddata', queueVisibilityCheck);
+  video.addEventListener('progress', () => {
+    if (activePreview === video) queueVisibilityCheck();
+  });
+  // Link estimates can miss a slow CDN route. Recover at the same pose if playback remains starved.
+  let stallTimer;
+  const clearStall = () => clearTimeout(stallTimer);
+  function watchForMotion() {
+    clearStall();
+    const fallback = video.dataset.low || video.dataset.light;
+    if (!fallback || video.getAttribute('src') === fallback) return;
+    const frames = preview.frames;
+    stallTimer = setTimeout(() => {
+      // Some engines fire playing while still presenting only the poster or first decoded frame.
+      if (activePreview !== video || video.paused || preview.frames - frames >= 2 || video.seeking) return;
+      if (video.currentTime > 0) preview.resumeAt = video.currentTime;
+      preview.constrained = true;
+      video.src = fallback;
+      playPreview(video);
+    }, 2200);
+  }
+  video.addEventListener('play', watchForMotion);
+  video.addEventListener('waiting', watchForMotion);
+  video.addEventListener('pause', clearStall);
   video.addEventListener('error', () => {
     if (preview.retried || activePreview !== video) return;
     preview.retried = true;
     setTimeout(() => {
-      if (video.error && activePreview === video) playPreview(video);
+      if (!video.error || activePreview !== video) return;
+      if (video.dataset.light) {
+        video.src = video.getAttribute('src') === video.dataset.light ? video.dataset.src : video.dataset.light;
+      }
+      playPreview(video);
     }, 1000);
   });
   previewResize?.observe(view);
@@ -110,6 +205,24 @@ window.addEventListener('scroll', queueVisibilityCheck, { passive: true });
 window.addEventListener('resize', queueVisibilityCheck);
 window.addEventListener('pageshow', queueVisibilityCheck);
 document.addEventListener('visibilitychange', syncVisibleLoops);
+
+function endNavigation() {
+  if (!navigationTarget) return;
+  navigationTarget = null;
+  queueVisibilityCheck();
+}
+let navigationTimer;
+document.querySelectorAll('#main-nav a, .head-inner .brand').forEach(link => link.addEventListener('click', event => {
+  if (event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !previewsEnabled) return;
+  const video = document.getElementById(link.hash.slice(1))?.querySelector('video[data-src]');
+  if (!previewViews.has(video)) return;
+  navigationTarget = video;
+  clearTimeout(navigationTimer);
+  navigationTimer = setTimeout(endNavigation, 1800);
+  syncVisibleLoops();
+}));
+window.addEventListener('wheel', endNavigation, { passive: true });
+window.addEventListener('touchstart', endNavigation, { passive: true });
 
 // One decoded video frame supplies every canvas in a comparison.
 function connectPortraitPlayback(video, view, restartOnExit = false) {
@@ -146,6 +259,11 @@ function observeFrames(video, view, paint, restartOnExit = false) {
   function draw(time = video.currentTime) {
     if (activePreview !== video || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
     paint(time);
+    const preview = previewViews.get(video);
+    if (time !== preview.lastFrameTime) {
+      preview.lastFrameTime = time;
+      preview.frames++;
+    }
     view.classList.add('frame-ready');
   }
   function queueFrame() {
@@ -220,7 +338,10 @@ function connectTiles(view, columns, size, update, restartOnExit = false) {
   }));
   observeFrames(video, view, time => {
     // A crop may be smaller than its atlas cell when the source uses a different native size.
-    for (const { slot, ctx, crop } of tiles) blit(ctx, video, slot % columns * size, Math.floor(slot / columns) * size, crop);
+    const cell = video.videoWidth / columns;
+    for (const { slot, ctx, crop } of tiles) {
+      blit(ctx, video, slot % columns * cell, Math.floor(slot / columns) * cell, Math.round(crop * cell / size));
+    }
     if (update) update(time);
   }, restartOnExit);
 }
@@ -371,8 +492,8 @@ streamClock.defaultPlaybackRate = 3;
 streamClock.playbackRate = 3;
 connectTiles(streamDemo, 3, 480);
 connectTiles(document.querySelector('#proxy-results'), 4, 480);
-connectTiles(document.querySelector('#data-fixed'), 4, 480);
-connectTiles(document.querySelector('#data-rotating'), 3, 480);
+// Both lighting conditions share the same decoded frame, including when only one row is visible.
+connectTiles(document.querySelector('#hybrid-data'), 4, 480);
 
 screening.addEventListener('filmopen', () => {
   syncVisibleLoops();

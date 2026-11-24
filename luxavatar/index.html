@@ -12,7 +12,7 @@
   <link rel="icon" href="media/mark.png">
   <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css?v=ae6b57dce0">
-  <script defer src="app.js?v=85115381c7"></script>
+  <script defer src="app.js?v=04beddd373"></script>
 </head>
 <body>
   <a class="skip" href="#project">Skip to project overview</a>
@@ -44,14 +44,14 @@
           <canvas aria-hidden="true"></canvas>
         </div>
       </div>
-      <video class="frame-source" id="opening-film" loop muted playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="media/opening/six-lights.mp4?cut=358-613"></video>
+      <video class="frame-source" id="opening-film" loop muted playsinline preload="none" aria-hidden="true" tabindex="-1" data-src="media/opening/six-lights.mp4?cut=358-613" data-light="media/opening/six-lights-light.mp4" data-mbps="5"></video>
       <div class="opening-probes opening-layout" role="group" aria-label="Target illumination for each head avatar, shown by a mirror sphere on the left and a diffuse sphere on the right">
-        <img src="media/opening/boxing-probes.png" alt="Boxing Ring mirror and diffuse spheres" title="Boxing Ring" width="223" height="104">
-        <img src="media/opening/kiara-probes.png" alt="Kiara Interior mirror and diffuse spheres" title="Kiara Interior" width="223" height="104">
-        <img src="media/opening/sun-probes.png" alt="Sunny Vondelpark mirror and diffuse spheres" title="Sunny Vondelpark" width="223" height="104">
-        <img src="media/opening/wooden-probes.png" alt="Wooden Studio mirror and diffuse spheres" title="Wooden Studio" width="223" height="104">
-        <img src="media/opening/magenta-probes.png" alt="Magenta / White mirror and diffuse spheres" title="Magenta / White" width="223" height="104">
-        <img src="media/opening/sunrise-probes.png" alt="Pink Sunrise mirror and diffuse spheres" title="Pink Sunrise" width="223" height="104">
+        <picture style="display:contents"><source hidden type="image/webp" srcset="media/opening/boxing-probes.webp"><img src="media/opening/boxing-probes.png" alt="Boxing Ring mirror and diffuse spheres" title="Boxing Ring" width="223" height="104"></picture>
+        <picture style="display:contents"><source hidden type="image/webp" srcset="media/opening/kiara-probes.webp"><img src="media/opening/kiara-probes.png" alt="Kiara Interior mirror and diffuse spheres" title="Kiara Interior" width="223" height="104"></picture>
+        <picture style="display:contents"><source hidden type="image/webp" srcset="media/opening/sun-probes.webp"><img src="media/opening/sun-probes.png" alt="Sunny Vondelpark mirror and diffuse spheres" title="Sunny Vondelpark" width="223" height="104"></picture>
+        <picture style="display:contents"><source hidden type="image/webp" srcset="media/opening/wooden-probes.webp"><img src="media/opening/wooden-probes.png" alt="Wooden Studio mirror and diffuse spheres" title="Wooden Studio" width="223" height="104"></picture>
+        <picture style="display:contents"><source hidden type="image/webp" srcset="media/opening/magenta-probes.webp"><img src="media/opening/magenta-probes.png" alt="Magenta / White mirror and diffuse spheres" title="Magenta / White" width="223" height="104"></picture>
+        <picture style="display:contents"><source hidden type="image/webp" srcset="media/opening/sunrise-probes.webp"><img src="media/opening/sunrise-probes.png" alt="Pink Sunrise mirror and diffuse spheres" title="Pink Sunrise" width="223" height="104"></picture>
       </div>
       <div class="opening-shade" aria-hidden="true"></div>
       <button class="preview-toggle" type="button" hidden><span>Pause previews</span></button>
@@ -101,43 +101,43 @@
           <div class="method-demo" data-stage="inputs" role="group" aria-label="From reference portrait and driving motion to a relit head avatar">
             <div class="method-inputs" role="group" aria-label="Reference and driving motion">
               <figure>
-                <img width="512" height="512" src="media/method/reference.png" alt="Reference portrait used to reconstruct and shade the head avatar">
+                <picture style="display:contents"><source hidden type="image/webp" srcset="media/method/reference.webp"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRiIBAABXRUJQVlA4IBYBAACwBwCdASokACQAPslYpE4npKMiKrqpWPAZCWUAxrgzxNA5N6F9/KDJ07EXnFnwrhEXeau6Ju/ZhLRHv618s5pnzExLOY2AAPxQRmk7qsx5OGXexRWEdUJrzVex878uNknMnxFvpW0IgWVliOtfq0afu2aMbWTg+zILbeNe+MLrIQ3FY0lPtFJjGn+Ka6PBTa61ztDvZjZz5u5sjfO46Qze9MjfEouOg7KQpks65a6Mb86SPfsdCx3LRGDhz0tPYiYLXjAMkS/6Qsj4waRmmZX3XRDTZHrQ0P7HzjYwS+c38Lmgj/BGfWCfq9WIPeBBNFTQzh3OHmCDvfxWEA7Vnxp+KNAZvDYL+LteybSXkUztWxsgc6gAAA==)" loading="lazy" fetchpriority="low" width="512" height="512" src="media/method/reference.png" alt="Reference portrait used to reconstruct and shade the head avatar"></picture>
                 <figcaption>Reference portrait</figcaption>
               </figure>
               <div class="method-motion" role="group" aria-label="Driving video and its tracked motion">
                 <figure>
-                  <div class="native-tile" data-slot="0"><img src="media/method/driver.jpg" alt="Driving video"><canvas aria-hidden="true"></canvas></div>
+                  <div class="native-tile" data-slot="0"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRloBAABXRUJQVlA4IE4BAACwCACdASokACQAPsVSoEsnpKMlLjgOYPAYiWgAsR9jyjDJGYg1tO6+xFk/tpSkNh2Jyri3LZrXVCKZfnSfedSAffQ2Ibii0oWButAwqYAA/ubF1FaFluSY/hkbTBs7fQEgJhqFoR3ol0RR8uaoTd7i60IT4xucNNuVXp/fvb3XzgI+TSpanxTC5oGrsIIHTK4z5U906U5cPBP6O6hD2M0CBn5doOEH8g1fLoJoYGRi0kU/cxhMem7azo9oqTpx6Sv22mv7jQwMGI8odVB+gRoeOF7uT2Dj+5sJ9uevs3IuSdI7ZmODTEDT0kLVAWVLoNF1hc0PjtkP0wNKhuxxr0vBQTrEoHG7fDvWhChO5q3Fwa2Nw5N9Hs7rQxZOw6imWUvcGor/+XCt5mz3Zf48ifYbaPUXuMy1p4Mej5JvmC2+cP9Yr5TIG2nVakJagAAA)" loading="lazy" fetchpriority="low" src="media/method/driver.jpg" alt="Driving video"><canvas aria-hidden="true"></canvas></div>
                   <figcaption>Driving video</figcaption>
                 </figure>
                 <figure>
-                  <div class="native-tile" data-slot="1"><img src="media/method/mesh.jpg" alt="Tracked FLAME mesh for the same driving frame"><canvas aria-hidden="true"></canvas></div>
+                  <div class="native-tile" data-slot="1"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRtwAAABXRUJQVlA4INAAAABwBgCdASokACQAPslep08npSMiI4wA8BkJaQDOOC5IAySFGLbu5YlTMzW5bXeSiBk6I/olzHxqOBVgBYAA/vcBm5nKeSfbC+CQbqRrm7qV8PDcx/CMe9uQViAVMUry9bgYvYQbREzkuqEUdmAqwUIU/n7ooRl9CggdcTK29+cqCOdkq+GwGSi99URqwh4eFRCAMDHBF7QBCKYKKhtldybAfFK6j3rbajqBdA23aSOpc7QIY5gmr4/2T0tnY4M/BRJl1dQYKvLyKpGeLHoxgAAA)" loading="lazy" fetchpriority="low" src="media/method/mesh.jpg" alt="Tracked FLAME mesh for the same driving frame"><canvas aria-hidden="true"></canvas></div>
                   <figcaption>Tracked FLAME</figcaption>
                 </figure>
               </div>
             </div>
             <div class="buffers" role="group" aria-label="Animated PBR buffers, target illumination and relit avatar">
               <figure class="buffer-panel">
-                <div class="native-tile" data-slot="2"><img src="media/method/normal.jpg" alt="Normal map"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="2"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRhABAABXRUJQVlA4IAQBAAAQBwCdASoaABoAPslcp08npSOiKAgA8BkJbACdMzOLG3u3Edt3uAN5m3nMBpQHQ+VOzq1QbAlEI6KC97MqZdctAAD+64u8hd/lXliM2UAK5/L3xATeFsRE9RHWWW8xUDn+03+tbjnOROQD/fkyp2JvEOuxbTjqTO8o7OLo+C9TcdcaR0jOeRdT3c7RshCw/sGFmBWSL+mXrqi4KkG0C8AEIm8YVyNcyiOQUkl6m1Ptp72ZPDB3Pw/UxcTIaWabFYmnZQUrKCXKsL0fcDFBbA72WKLRgSmyt+SV9EyPd7QRbF836KAI9O1JZvQLbjpHAuc9F5dsq0ef+aEjOUYeu+WTeawAAA==)" loading="lazy" fetchpriority="low" src="media/method/normal.jpg" alt="Normal map"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Normal map</figcaption>
               </figure>
               <figure class="buffer-panel">
-                <div class="native-tile" data-slot="3"><img src="media/method/basecolor.jpg" alt="Base color"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="3"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRvQAAABXRUJQVlA4IOgAAABQBgCdASoaABoAPslcp08npSMiKAgA8BkJYgCdIMAcAjr0pZX511h69/L/vdAf3d3oWO9gfwUIjoNZMAD+67CasXgckm/KlO6OR744rgPtStH0vMcv5Pgx4rQ0qyXG1OD9w8Co1HR3yOWyHj98fsJDDbQ2rBtQJGDiz3dE8vp7+t5py9USRRjFhs2qF5DrI84yMzGuOO9PUTS6atHF7Gw63Ja+vM3RmkI6WhujCdfW0uuQHyY4/mjhQ/r70QzN0fHz3urKrjl1BV+CFHvLkqkY2+lZ8DluMeHlxldAoh4yjdl2cbJvgAAA)" loading="lazy" fetchpriority="low" src="media/method/basecolor.jpg" alt="Base color"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Base color</figcaption>
               </figure>
               <figure class="buffer-panel">
-                <div class="native-tile" data-slot="4"><img src="media/method/roughness.jpg" alt="Roughness"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="4"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAADQBACdASoaABoAPslOoUsnpCMht/VYAPAZCWkAACpg7bVH0RLg4l9RGVBv0QegAAD+7jqtqrje6x6FmUTUgx24kDRrH6rt2PiZMhMSYjYIpIQxqDVty6LPiUqwgjFGOIRP1/cXrc7xKYgA)" loading="lazy" fetchpriority="low" src="media/method/roughness.jpg" alt="Roughness"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Roughness</figcaption>
               </figure>
               <figure class="buffer-light">
-                <div><img src="media/method/wooden-specular.png" alt="Wooden Studio mirror sphere"><img src="media/method/wooden-diffuse.png" alt="Wooden Studio diffuse sphere"></div>
+                <div><picture style="display:contents"><source hidden type="image/webp" srcset="media/method/wooden-specular.webp"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRloBAABXRUJQVlA4WAoAAAAQAAAAGQAAGQAAQUxQSDEAAAABUOS2baP/fzqjbSbQc0RMAMvlWiHBjCRDkg5I4UNKd8ghX8M02qjgnSOaIR4jf2M5AFZQOCACAQAA0AUAnQEqGgAaAD7JXqhPJ6UjoigIAPAZCWwAnTLiOhlnoDC43h2jjRrrpThTRgE1SyYpN+ScAAD+uST0XGRitqhCb2aWuKlcF2kjImz3It7rbJKZHOTflGqdZdDiFGGOjQWXhhdlzD8dEIP1afwTsW25JbUWtgQQvjZAlrvL89KDd82ib17i+XUtxv80duL9j1YvOuUFc8KlUamz9TBACTd7rtISZ/bag9f4T4nP4hvXFT1HusuJQ9Ll+P7ef/MQSMNalth6MDz2ckX7BLwwcgSsf2W/DaK+9RVEmcNhF34fQOQqNpIIgieB2xpEIsjmcutYnDBX+UELOq2BgUK8AAAA);height:auto" loading="lazy" fetchpriority="low" src="media/method/wooden-specular.png" alt="Wooden Studio mirror sphere" width="320" height="320"></picture><picture style="display:contents"><source hidden type="image/webp" srcset="media/method/wooden-diffuse.webp"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRiwBAABXRUJQVlA4WAoAAAAQAAAAGQAAGQAAQUxQSDEAAAABUOS2baP/fzqjbSbQc0RMAMvlWiHBjCRDkg5I4UNKd8ghX8M02qjgnSOaIR4jf2M5AFZQOCDUAAAAcAUAnQEqGgAaAD7JUqJLp6SjIbAYDADwGQlsALEfCcwKo9AwNU4Ay9a49IIn9nsDVjsQAAD+w1Bz5lnhB16FM9M4b1St/u5QT1lSBRO994X4ex/xjULforIhAsXwgUek/n9Y24szNczK0T5t+49nls08+esteQh/pAJjBt/0JrJYMaRdKJJep6/2h/+0c34nM7+6FfQ9AoPzYPeO4/wag6k8Wdsa6mIis7RBkz9htI1zL7l7J0eJmNzTxg7csFv+b45rdbnYv+3nsVwYJRSCAvSYAAA=);height:auto" loading="lazy" fetchpriority="low" src="media/method/wooden-diffuse.png" alt="Wooden Studio diffuse sphere" width="320" height="320"></picture></div>
                 <figcaption>Target illumination</figcaption>
               </figure>
               <figure class="buffer-panel avatar-panel">
-                <div class="native-tile" data-slot="5" data-size="480"><img src="media/method/relit.jpg" alt="Relit avatar"><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="5" data-size="480"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRtQAAABXRUJQVlA4IMgAAADwBQCdASoaABoAPslao04npSKiKAqo8BkJZgCpI8CA93j9mNtkZkC5SsxKHz9uJdg00Uv4AdaPwAD9uy63uAIYuyuRwIrOg2sYZw1Aqpi4f0xQKoPoiUBs2L0gpz6hnkz7+3d9zOVrYIOezOG9gDjpYOiH1sjwhv02SkOIuX8dtJnLu+dx39CjHJvEvIybCMdzNU2B1AsDQN3Stufe6eDsCS1Q4DZMfaMOSmznS4nliCFFvmx1nkY8W6txmh3nNYFQMMP2ViHgAA==)" loading="lazy" fetchpriority="low" src="media/method/relit.jpg" alt="Relit avatar"><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Relit avatar</figcaption>
               </figure>
             </div>
-            <video class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/method/synchronized.mp4"></video>
+            <video class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/method/synchronized.mp4" data-light="media/method/synchronized-light.mp4" data-mbps="6.5"></video>
           </div>
         </div>
       </div>
@@ -154,7 +154,7 @@
         <div class="wall-screen" role="img" aria-label="A growing cast of head avatars performing the same motion">
           <div class="cast-grid" aria-hidden="true">
             <img class="cast-poster" loading="lazy" width="900" height="900" src="media/gallery/cast-poster.webp" alt="">
-            <video id="wall-film" playsinline muted loop preload="none" data-src="media/gallery/portraits.mp4"></video>
+            <video id="wall-film" playsinline muted loop preload="none" data-src="media/gallery/portraits.mp4" data-light="media/gallery/portraits-light.mp4" data-low="media/gallery/portraits-low.mp4" data-mbps="19"></video>
           </div>
         </div>
       </div>
@@ -203,7 +203,7 @@
                 <div class="native-tile" data-slot="8"><img loading="lazy" src="media/viewpoint/portrait-8.jpg" alt="Animated head avatar N380"><canvas aria-hidden="true"></canvas></div>
               </div>
             </div>
-            <video id="view-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/viewpoint/portraits.mp4"></video>
+            <video id="view-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/viewpoint/portraits.mp4" data-light="media/viewpoint/portraits-light.mp4" data-mbps="9"></video>
           </div>
         </section>
       </div>
@@ -219,38 +219,38 @@
         </div>
         <div class="data-grid proxy-grid native-player" id="proxy-results">
           <div class="proxy-inputs">
-            <figure><img loading="lazy" src="media/training-proxy/reference.png" alt=""><figcaption>Reference portrait</figcaption></figure>
-            <figure><img loading="lazy" src="media/training-proxy/target-light.png" alt=""><figcaption>Target lighting</figcaption></figure>
+            <figure><picture style="display:contents"><source hidden type="image/webp" srcset="media/training-proxy/reference.webp"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRgYBAABXRUJQVlA4IPoAAAAwBgCdASoaABoAPslYpEynpSOiMBgIAPAZCUAKv64TLBsP3+AEgqmb+eN9b8+1IiQ0EBb6k4BZUcEAAP5NdtsFWK0H+0jEn4HEHA/3tKCorgAEbm1TBu/B3o5tMyfatiFoeDXzUqBu971Mqu/3bNjM06F185DJ3aRcTwmW77h5qMWLfpnDGZRqsqKm64LenTEHKkDl5VPw5gjpPIOUEMlT0VmQAfznjgg8s3ZrZMP7jBBJDQGf9/QearN55qrIq6dbIWrWB1xqoOPhA6KEniYkI2CahbfhDiTBcN3InOzNUdRZK1msrjkqpqm1cjavg6XuKbEU920VaAAA);height:auto" loading="lazy" src="media/training-proxy/reference.png" alt="" width="480" height="480"></picture><figcaption>Reference portrait</figcaption></figure>
+            <figure><picture style="display:contents"><source hidden type="image/webp" srcset="media/training-proxy/target-light.webp"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRkIBAABXRUJQVlA4WAoAAAAQAAAAGQAAGQAAQUxQSDEAAAABYNy2kSP13/Rm2xvu3hExAVxepoEiG8WUii2U4KJELyrhv8BpbCPB2kN10DX8GZcDAFZQOCDqAAAAkAUAnQEqGgAaAD7JVqVNJ6SjojAYCADwGQlAF7oxkqs3j6XNQv/9mLsxVE+CeAT6ubT1S4AA/rmfUxXtDEbGPDLjwUuLSOFYjS8Hclfz8DGyJqPv5rfHoB+p7h0V792V9nI+boNGPK5TGd6dW//XOYsNUBWdupJiGSxOYkLlBVX1R7hX1cEA3dSwQemcFa4U34LIlr67WVk13+566eCNMr0f38fDxgS+tvm9MbodUJ18f/9QGM36FJaxvubEas79S+oo+EOHXn/R0DRY5FSKlBFIOfZmp1uuPpccbFxsa5lG6IVt54vCcwAA);height:auto" loading="lazy" src="media/training-proxy/target-light.png" alt="" width="384" height="384"></picture><figcaption>Target lighting</figcaption></figure>
           </div>
           <figure>
-            <div class="native-tile" data-slot="0"><img loading="lazy" src="media/training-proxy/portrait-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="0"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRtgAAABXRUJQVlA4IMwAAACQBQCdASoaABoAPslWo0ynpKMiKA1Q8BkJQBadAbsqSaYNY0/UVZKm2PgMxRuo8oN9KfOvgAD+vdLdcUFjXd0LHZLz5k0PoSWdVvsuqgyX0WBuBXheIXXlTNfy9ubFtmx7PTDwJCBUxfPCpEZmXF7QjbeAQY2xoOY4W/K6CWIV0nN5atRLC7r3mxxT4PN+HWhfmZit3JuR1rB1tte1TIF551b/t58EBIUr+ru7yxAZ7La85fuirudKV8h8uC/vq7PZKg8eboV7/uMAAAA=)" loading="lazy" src="media/training-proxy/portrait-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>DMD-only</figcaption>
           </figure>
           <figure>
-            <div class="native-tile" data-slot="1"><img loading="lazy" src="media/training-proxy/portrait-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="1"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRvgAAABXRUJQVlA4IOwAAADQBQCdASoaABoAPslMo0uno6MhsBgMAPAZCWYAtRsvwVJdIPCR9XteMu87fGvV111zg93KvtoAAP7s7gvqMnvhFcZONnNo498YfqRuM8WdkbD4ssMLRMhUc0kZ5Knh2P0kJsvc2SMiifO0SZJjqIM44KIvYuxVFhoGAkzSfz8HD7NjZBNTBGMK2yiuYj/0nmJy+H6g8fhKxUPseN5HVJoFOA2itwOJucw8IWNWqyG80uKwWGp82MojdYeBWgrM2jCY9DjXUsHVlwTEnxYY2a5cRumj97Nt3ZnXbW9411wntiIUIdka1QQoG2QAAA==)" loading="lazy" src="media/training-proxy/portrait-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>Direct SF</figcaption>
           </figure>
           <figure>
-            <div class="native-tile" data-slot="2"><img loading="lazy" src="media/training-proxy/portrait-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="2"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRvoAAABXRUJQVlA4IO4AAADQBQCdASoaABoAPslUo0snpKMhsBgMAPAZCWgArAANs49Jfx2LKR7Z2hIHgwtSKbo/ThvTVeNAAP7qQAWiCdTDaJKsCI8FkN5iXg+xsGov8sMzCeZSWVnadrPOywoX0ELB/FcfJUp2sTzNfIx3UhwM19o+6+vOJsHaYiC0dCu1TSlGzIDa5HUv6p49dXG+WVJ94vmkOcPT0cbNKoaDiKoPrDrs7de8eUEgIF6Uz5yM8WxOg+29lhcWAEkMGECR3XJ0xAXRX6o3AKq2DVJurqP96WHgruiNzqdMC7f/BAMheto2ZB653csVY1dIAAAA)" loading="lazy" src="media/training-proxy/portrait-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>GS-RGB</figcaption>
           </figure>
           <figure>
-            <div class="native-tile" data-slot="3"><img loading="lazy" src="media/training-proxy/portrait-3.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="3"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRv4AAABXRUJQVlA4IPIAAADQBQCdASoaABoAPslWo0ynpKMiKA1Q8BkJZgCpFL/BOs7XuXKLuNQxeesOvbFkyPGrC4BBzZEAAP7vEIPTT28wzUyBt1etI0dYSZDVFo53vFOSdODIFImPWJXt9SgZY39tZfVBnUAWRIWQzPdwglu4ICw3imuK2m/slOaIGgAAhjzCmMsOY9xDcF9q7h79/tBL1SxAFxfFnAwJ2TGxVPbt7kkF9LWebS1ylKmYjnXd4u0dxSV+J4SNPNV3MVWmQA3RP6gKUWNbkrBlD0UAGe8pwcL3n+vQuEZ0MPOI570w/k5EuV2BtaHLsPEGA/FpjeoAAA==)" loading="lazy" src="media/training-proxy/portrait-3.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>GS-N</figcaption>
           </figure>
           <figure>
-            <div class="native-tile" data-slot="4"><img loading="lazy" src="media/training-proxy/portrait-4.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="4"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRgIBAABXRUJQVlA4IPYAAACQBQCdASoaABoAPslWo0wnpKMiKA1Q8BkJZgCsINiBg7PSdAOTP56P2MtSJomajDE+5wQAAAD+7O0sZbj+xb1Etg7bhm+T17vV74wenhgs8mnx66v4aKOhDaGyqkHwcA/AnSVRFmcmD6jgBFqjFVWNQLk1IfzsI8ksRvzXMff3ah5sDy/TNVvQ9/56NHlh99/BeWx+0Vd7RH17lx+iXivNGVdzFj6TUflLDr/O3xw0FLC/CaW0Eo6jIVtStWQmnZkSqJJ9U73MIfu+0YUarUxgpItBFrbENvKMWotP1KDwu4hz8rLhBmhQxHe/9ODjBWKAAfh8AAA=)" loading="lazy" src="media/training-proxy/portrait-4.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>FLAME-N</figcaption>
           </figure>
           <figure>
-            <div class="native-tile" data-slot="5"><img loading="lazy" src="media/training-proxy/portrait-5.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="5"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRgYBAABXRUJQVlA4IPoAAAAwBgCdASoaABoAPslWo0ynpKMiKA1Q8BkJZgCsAY0+bxWqZT1dKXJJUFQUhfhZiTvy7WHo/ygG29gAAP7s7gOnzg2TqmI0NilIfMD8gl6Yf+WfW5aPNHER0KzJZ/aMcg6yzrGkbb96YhZ3MnEbLjjqkUwtEmsf8gry48QdacNm/2v7lY+bwNXRYWrq5u3vG0anRycxi9E+WZ5InrhamEW3GyjEnU8bDbGOFhca8VeJ0HocE4RjLD8t+un4cFEenmNjxRRHP0UHesaRlqHCA2dgz3aBFNwP3db3C0GAJSHc4+x27sqcWm7kczSfL+jZBtCH2H8Gbi6jqAAA)" loading="lazy" src="media/training-proxy/portrait-5.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption class="data-full">Ours</figcaption>
           </figure>
           <figure>
-            <div class="native-tile" data-slot="6"><img loading="lazy" src="media/training-proxy/portrait-6.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+            <div class="native-tile" data-slot="6"><img style="background:center / 100% 100% no-repeat url(data:image/webp;base64,UklGRv4AAABXRUJQVlA4IPIAAACwBQCdASoaABoAPslYpk2npKOiKAqo8BkJaACsMzLulB3pMyuIlwso7b5QpldYIi4xb6efzAAA/uas+sgU6S9QyzIex6SzSWigDSTi8mdrvg2WPSiXzVan08TDrWJikbEH9JKn3E7bhXjkMzogNMKQSH+vDiJl2rAfyGG7y/YyzC+93N7tErFF11fkR3hUWTRvUbT6q6HZpwtcRoq2qV7VX53tPmQe9icW1xJgmUs71SEngx2fR5f6Q7I8c+hxeFScnitMbyTlebMMAE+g7cHddtG8MVaq2Gb1/rvafiRkgAnSjOOTxnlU8FeUE6przihgAA==)" loading="lazy" src="media/training-proxy/portrait-6.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
             <figcaption>Ground truth</figcaption>
           </figure>
-          <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/training-proxy/portraits.mp4"></video>
+          <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/training-proxy/portraits.mp4" data-light="media/training-proxy/portraits-light.mp4" data-low="media/training-proxy/portraits-low.mp4" data-mbps="12"></video>
         </div>
       </section>
       <section class="shell data-study" id="hybrid-data" aria-labelledby="data-title">
@@ -281,7 +281,6 @@
                 <div class="native-tile" data-slot="3"><img loading="lazy" src="media/hybrid/fixed-3.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption class="data-full">Full model</figcaption>
               </figure>
-              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/hybrid/fixed.mp4"></video>
             </div>
           </div>
           <div class="data-row">
@@ -289,18 +288,18 @@
             <div class="data-grid native-player" id="data-rotating">
               <figure class="data-input"><img class="data-reference" loading="lazy" src="media/hybrid/reference.jpg" alt=""><figcaption>Reference portrait</figcaption></figure>
               <figure class="data-input data-probe">
-                <div class="native-tile" data-slot="2"><img loading="lazy" src="media/hybrid/rotating-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="6"><img loading="lazy" src="media/hybrid/rotating-2.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption>Target lighting</figcaption>
               </figure>
               <figure>
-                <div class="native-tile" data-slot="0"><img loading="lazy" src="media/hybrid/rotating-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="4"><img loading="lazy" src="media/hybrid/rotating-0.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption>w/o OLAT</figcaption>
               </figure>
               <figure>
-                <div class="native-tile" data-slot="1"><img loading="lazy" src="media/hybrid/rotating-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
+                <div class="native-tile" data-slot="5"><img loading="lazy" src="media/hybrid/rotating-1.jpg" alt=""><canvas aria-hidden="true"></canvas></div>
                 <figcaption class="data-full">Full model</figcaption>
               </figure>
-              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/hybrid/rotating.mp4"></video>
+              <video class="frame-source" playsinline muted loop preload="none" aria-hidden="true" data-src="media/hybrid/synchronized.mp4" data-light="media/hybrid/synchronized-light.mp4" data-low="media/hybrid/synchronized-low.mp4" data-mbps="12"></video>
             </div>
           </div>
       </section>
@@ -331,7 +330,7 @@
               </figure>
             </div>
           </div>
-          <video id="stream-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/streaming/sequence-16fps.mp4"></video>
+          <video id="stream-clock" class="frame-source" muted playsinline loop preload="none" aria-hidden="true" data-src="media/streaming/sequence-16fps.mp4" data-light="media/streaming/sequence-16fps-light.mp4" data-low="media/streaming/sequence-16fps-low.mp4" data-mbps="12"></video>
         </div>
       </section>
     </section>

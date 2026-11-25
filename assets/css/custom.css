@@ -416,8 +416,8 @@ ul.wy-research-list > li.wy-pub-entry:last-child {
 }
 
 #luma4d .wy-pub-thumb video {
-  /* Center the performers within the thumbnail, cropping the lighting spheres on the left. */
-  object-position: 75% center;
+  /* Crop more of the lighting spheres to leave room for the rightmost performers. */
+  object-position: 85% center;
 }
 
 .wy-pub-thumb--square {

@@ -420,6 +420,10 @@ ul.wy-research-list > li.wy-pub-entry:last-child {
   background: #000;
 }
 
+.wy-pub-thumb--square {
+  aspect-ratio: 1;
+}
+
 .wy-pub-main {
   min-width: 0;
 }

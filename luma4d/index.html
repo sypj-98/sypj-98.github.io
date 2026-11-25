@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#141817">
+  <meta name="description" content="LUMA4D reconstructs dynamic human performances from multiview video for free-viewpoint rendering under new illumination. Explore relighting results, the method, and the research film.">
+  <meta property="og:title" content="LUMA4D — Relightable Volumetric Performance Reconstruction">
+  <meta property="og:description" content="Explore the performances, environment lighting comparisons, and research film from LUMA4D.">
+  <meta property="og:image" content="https://sypj-98.github.io/images/luma4d-teaser.jpg">
+  <title>LUMA4D: Generative Prior-Guided Relightable Volumetric Performance Reconstruction with Disentangled Motion-Appearance Gaussians</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#overview">Skip to project</a>
+  <header class="mast" id="top">
+    <div class="shell mast-inner">
+      <a class="brand" href="#top" aria-label="LUMA4D project home"><span class="lens" aria-hidden="true"></span>LUMA<i>4D</i></a>
+      <nav aria-label="Project sections"><a href="#relighting">Relighting</a><a href="#method">Method</a><a href="#film">Film</a></nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero" id="overview" aria-labelledby="project-name">
+      <div class="shell hero-inner">
+        <div class="hero-copy">
+          <p class="venue"><span aria-hidden="true"></span>IEEE TPAMI <span class="venue-year">2026</span></p>
+          <h1 id="project-name">LUMA<i>4D</i></h1>
+          <p class="paper-title">Generative Prior-Guided Relightable Volumetric Performance Reconstruction with Disentangled Motion-Appearance Gaussians</p>
+          <p class="authors" aria-label="Authors">
+            <span>Yipengjing Sun<sup>1</sup></span> <span>Huan Wang<sup>2</sup></span> <span>Chenyang Wang<sup>1</sup></span> <span>Shunyuan Zheng<sup>1</sup></span> <span>Boyao Zhou<sup>3</sup></span> <span>Yebin Liu<sup>3</sup></span> <span>Shengping Zhang<sup>1</sup></span>
+          </p>
+          <p class="affiliations"><span><sup>1</sup> Harbin Institute of Technology</span> <span><sup>2</sup> Shandong University</span> <span><sup>3</sup> Tsinghua University</span></p>
+          <a class="watch" href="#film" id="watch-film"><span class="play-symbol" aria-hidden="true"></span>Watch research film <span class="runtime">3:56</span></a>
+        </div>
+        <figure class="comparison">
+          <div class="comparison-cap"><span>Lighting comparison</span><label for="light-split" class="drag-hint" hidden>Drag to compare</label></div>
+          <div class="comparison-stage">
+            <img src="media/dancer-street.webp" width="534" height="534" alt="A dancer under the warm light of an evening street.">
+            <img class="comparison-left" src="media/dancer-colonnade.webp" width="534" height="534" alt="The same dancer under the cooler illumination of a colonnade.">
+            <span class="divider" aria-hidden="true"><span class="grip" hidden></span></span>
+            <input id="light-split" aria-label="Lighting comparison, percentage showing the colonnade" type="range" min="0" max="100" value="50" hidden>
+          </div>
+          <figcaption><span><img src="media/probe-colonnade.webp" width="30" height="30" alt="">Colonnade</span><span><img src="media/probe-street.webp" width="30" height="30" alt="">Evening street</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="relighting" class="results" aria-labelledby="results-title">
+      <div class="shell">
+        <div class="section-intro">
+          <h2 id="results-title">Relighting <i>in motion</i></h2>
+          <p>Six performances under changing illumination. The light probes on the left show the environment for each row.</p>
+        </div>
+        <div class="gallery">
+          <div class="gallery-view">
+            <video id="teaser" controls muted playsinline preload="metadata" poster="../images/luma4d-teaser.jpg" width="1920" height="1076" aria-label="Six performers rendered under different lighting environments"><source src="../images/luma4d-teaser.mp4" type="video/mp4"><a href="../images/luma4d-teaser.mp4">Open the relighting video</a></video>
+          </div>
+          <div class="gallery-settings">
+            <h3>Lighting setups</h3>
+            <p>Select a frame to inspect the lighting.</p>
+            <ul class="setups" aria-label="Lighting setups in the top row">
+              <li><a href="../images/luma4d-teaser.mp4#t=5.5" data-still="5.5"><img src="media/probe-woodland.webp" width="38" height="38" alt=""><span>Woodland</span><time>0:05</time></a></li>
+              <li><a href="../images/luma4d-teaser.mp4#t=6.6" data-still="6.6"><img src="media/probe-colonnade.webp" width="38" height="38" alt=""><span>Colonnade</span><time>0:06</time></a></li>
+              <li><a href="../images/luma4d-teaser.mp4#t=8.7" data-still="8.7"><img src="media/probe-street.webp" width="38" height="38" alt=""><span>Evening street</span><time>0:08</time></a></li>
+              <li><a href="../images/luma4d-teaser.mp4#t=14" data-still="14"><img src="media/probe-park.webp" width="38" height="38" alt=""><span>Park at night</span><time>0:14</time></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="method" id="method" aria-labelledby="method-title">
+      <div class="shell">
+        <div class="section-intro">
+          <h2 id="method-title">Reconstructing a <i>performance</i></h2>
+          <p>LUMA4D reconstructs people in motion from multiview video, so their performances can be rendered from new viewpoints and under new lighting.</p>
+        </div>
+        <div class="method-body">
+          <dl class="steps">
+            <div><dt>Dynamic geometry</dt><dd>A dynamic signed distance field recovers the performer’s surface. The mesh from the reference frame provides the starting points for motion tracking.</dd></div>
+            <div><dt>Gaussian tracking</dt><dd>Sparse motion Gaussians follow the performer across frames. A denser set of appearance Gaussians is attached to them to capture details that change with pose.</dd></div>
+            <div><dt>Physically based appearance</dt><dd>Geometry and material priors guide the rendering model. It accounts for light visibility and indirect illumination when estimating how the performer reflects light.</dd></div>
+          </dl>
+          <figure class="pipeline">
+            <a class="diagram" href="media/method.webp" aria-label="Open the full-size LUMA4D pipeline diagram"><img src="media/method.webp" width="1800" height="1020" loading="lazy" alt="The pipeline starts with multiview video, tracks Gaussians on a reference mesh, and estimates albedo, roughness, normals, ambient occlusion and indirect light."></a>
+            <figcaption><span>Method overview from the paper</span><a href="media/method.webp">Full-size figure</a></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="film" id="film" aria-labelledby="film-title">
+      <div class="shell">
+        <div class="section-intro"><h2 id="film-title">Research <i>film</i></h2><p>Explore the supplementary video chapter by chapter, from reconstructed views to geometry and motion tracking.</p></div>
+        <div class="film-body">
+          <div class="full-player">
+            <video controls playsinline preload="none" poster="media/film-poster.jpg" width="1920" height="1076" id="research-film" aria-label="LUMA4D supplementary research film"><source src="media/research-film.mp4" type="video/mp4"><a href="media/research-film.mp4">Open the research film</a></video>
+            <div class="player-caption"><span>Supplementary video <span class="duration">/ 3:56</span></span><a href="media/research-film.mp4">Open MP4</a></div>
+          </div>
+          <div class="chapter-block">
+            <h3>Chapters</h3>
+            <ol class="chapters" aria-label="Research film chapters">
+              <li><a href="media/research-film.mp4#t=0" data-chapter="0"><time>0:00</time>Overview</a></li>
+              <li><a href="media/research-film.mp4#t=46.8" data-chapter="46.8"><time>0:46</time>Novel-view synthesis</a></li>
+              <li><a href="media/research-film.mp4#t=75.6" data-chapter="75.6"><time>1:15</time>Intrinsic decomposition</a></li>
+              <li><a href="media/research-film.mp4#t=104" data-chapter="104"><time>1:44</time>Relighting</a></li>
+              <li><a href="media/research-film.mp4#t=175.7" data-chapter="175.7"><time>2:55</time>Geometry reconstruction</a></li>
+              <li><a href="media/research-film.mp4#t=209" data-chapter="209"><time>3:29</time>Dynamic meshes</a></li>
+              <li><a href="media/research-film.mp4#t=221.75" data-chapter="221.75"><time>3:41</time>Gaussian tracking</a></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer><div class="shell foot-inner"><span>LUMA4D <span class="foot-venue">/ IEEE TPAMI 2026</span></span><a href="#top">Back to top</a></div></footer>
+</body>
+</html>

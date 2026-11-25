@@ -1,16 +1,5 @@
 'use strict';
 
-const split = document.querySelector('#light-split');
-const stage = split.closest('.comparison-stage');
-
-function updateComparison() {
-  stage.style.setProperty('--split', split.value + '%');
-  split.setAttribute('aria-valuetext', split.value + '% colonnade, ' + (100 - split.value) + '% evening street');
-}
-split.addEventListener('input', updateComparison);
-updateComparison();
-for (const control of document.querySelectorAll('.comparison [hidden]')) control.hidden = false;
-
 const teaser = document.querySelector('#teaser');
 const film = document.querySelector('#research-film');
 const stills = [...document.querySelectorAll('[data-still]')];
@@ -47,7 +36,17 @@ function seekTo(video, time, play) {
 
 for (const video of [teaser, film]) {
   video.addEventListener('loadedmetadata', () => applySeek(video));
-  video.addEventListener('play', () => (video === film ? teaser : film).pause());
+}
+
+// Starting a result or the full film pauses any other performance on the page.
+const players = [...document.querySelectorAll('video')];
+for (const player of players) {
+  player.addEventListener('play', () => {
+    if (player.paused) return;
+    for (const other of players) {
+      if (other !== player && !other.paused) other.pause();
+    }
+  });
 }
 
 function usualClick(event) {

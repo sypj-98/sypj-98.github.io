@@ -437,15 +437,6 @@ ul.wy-research-list > li.wy-pub-entry:last-child {
   color: var(--wy-text);
 }
 
-.wy-pub-title a {
-  color: inherit;
-  border-bottom: none;
-}
-
-.wy-pub-title a:hover {
-  color: var(--wy-link-hover);
-}
-
 .wy-pub-authors {
   font-size: 0.88rem;
   color: var(--wy-muted);

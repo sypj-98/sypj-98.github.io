@@ -417,8 +417,17 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
 
 .citation-inner { display:flex; align-items:baseline; justify-content:space-between; gap:24px; padding-block:clamp(42px,4.4vw,76px); }
 .citation-inner h2 { font-size:clamp(2.8rem,4.4vw,4.9rem); line-height:1; letter-spacing:-.04em; }
-.citation-inner p { color:#f5d3a4; font:clamp(.88rem,1.1vw,1.1rem) ui-monospace,monospace; }
-.citation-inner p span { color:#c3beb5; }
+.citation-bibtex { min-width:0; max-width:100%; }
+.citation-bibtex figcaption { color:#f5d3a4; font:clamp(.88rem,1.1vw,1.1rem) ui-monospace,monospace; }
+.citation-bibtex pre {
+  margin:.75rem 0 0;
+  padding:clamp(.75rem,1.4vw,1.25rem);
+  border:1px solid var(--line);
+  border-radius:4px;
+  font:clamp(.8rem,1.1vw,1rem)/1.55 ui-monospace,monospace;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
 @media(max-width:760px) {
   .view-layout { grid-template-columns:minmax(0,1fr); gap:20px; }
   .view-context { display:contents; }
@@ -528,7 +537,7 @@ h1 i{font-size:1.08em;letter-spacing:-.077em;color:var(--amber);margin-left:.015
   .native-player figcaption { font-size:clamp(.77rem,calc(16 * var(--design-px)),1rem); }
   .citation-inner { padding-block:calc(76 * var(--design-px)); }
   .citation-inner h2 { font-size:clamp(2.25rem,calc(78.4 * var(--design-px)),4.9rem); }
-  .citation-inner p { font-size:clamp(.75rem,calc(17.6 * var(--design-px)),1.1rem); }
+  .citation-bibtex figcaption { font-size:clamp(.75rem,calc(17.6 * var(--design-px)),1.1rem); }
 
   #screening { width:min(calc(100% - 24px),max(34rem,calc(960 * var(--design-px)))); }
   .screen-head { padding:calc(17 * var(--design-px)) calc(22 * var(--design-px)); }
